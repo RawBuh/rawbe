@@ -196,9 +196,9 @@ const GetProjectQuote = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <div className="flex gap-8">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Main Content */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {/* Page Header */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Get a Project Quote</h2>
@@ -207,7 +207,7 @@ const GetProjectQuote = () => {
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Cladding Panel Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
               <div className="flex items-center justify-between mb-5 pb-2 border-b border-gray-100">
                 <h2 className="text-lg font-medium text-gray-900 font-sans">
                   Cladding Panel
@@ -290,7 +290,7 @@ const GetProjectQuote = () => {
             </div>
 
             {/* Facade Layout Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
               <div className="flex items-center justify-between mb-5 pb-2 border-b border-gray-100">
                 <h2 className="text-lg font-medium text-gray-900 font-sans">
                   Facade Layout
@@ -302,7 +302,7 @@ const GetProjectQuote = () => {
               <div className="space-y-6">
                 {/* Layout Selection with Multiple Layouts */}
                 <div>
-                  <div className="overflow-x-auto max-w-lg">
+                  <div className="overflow-x-auto">
                     <div className="flex gap-3 pb-4">
                       {layouts.map((layout, index) => (
                         <div
@@ -312,7 +312,7 @@ const GetProjectQuote = () => {
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, layoutIndex: index }))}
                         >
-                          <div className="bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow overflow-hidden w-56">
+                          <div className="bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow overflow-hidden w-48 sm:w-56">
                             <div className="relative bg-gray-50 h-40 flex items-center justify-center">
                               <img
                                 src={layout.image}

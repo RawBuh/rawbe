@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
-import { Search, BarChart, MessageSquare, Calculator, Filter, ExternalLink, Upload, Download, FileText, Truck, Settings, Table, DollarSign, ClipboardCheck } from 'lucide-react';
+import { Search, BarChart, MessageSquare, Calculator, Filter, ExternalLink, Upload, Download, FileText, Truck, Settings, Table, DollarSign, ClipboardCheck, Menu } from 'lucide-react';
 import GetProjectQuote from '../pages/GetProjectQuote';
 
-const MainContent = ({ activeSection, setActiveSection }) => {
+const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('last-month');
 
   const Header = () => (
     <div className="flex justify-between items-center mb-8 font-sans">
       <div className="flex items-center space-x-4">
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setSidebarOpen && setSidebarOpen(true)}
+          className="lg:hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         {/* Removed Rawbe heading from all pages */}
       </div>
       <div className="flex items-center gap-2">
@@ -610,7 +617,7 @@ const MainContent = ({ activeSection, setActiveSection }) => {
   };
 
   return (
-    <div className="p-8 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
       <Header />
       {renderContent()}
     </div>

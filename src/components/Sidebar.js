@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlusCircle, Home, Settings, Table, DollarSign, Shield, ClipboardCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const Sidebar = ({ activeSection, setActiveSection, onCollapseChange }) => {
+const Sidebar = ({ activeSection, setActiveSection, onCollapseChange, sidebarOpen, setSidebarOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navigationItems = [
@@ -35,7 +35,19 @@ const Sidebar = ({ activeSection, setActiveSection, onCollapseChange }) => {
 
   if (isCollapsed) {
     return (
-      <div className="bg-gray-50 text-gray-800 w-24 h-screen fixed left-0 top-0 pt-6 px-3 overflow-y-auto font-sans transition-all duration-300">
+      <>
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
+        {/* Sidebar */}
+        <div className={`bg-gray-50 text-gray-800 w-24 h-screen fixed left-0 top-0 pt-6 px-3 overflow-y-auto font-sans transition-all duration-300 z-50 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
         {/* Collapsed Header */}
         <div className="mb-8 flex flex-col items-center">
           <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center mb-4">
@@ -103,12 +115,25 @@ const Sidebar = ({ activeSection, setActiveSection, onCollapseChange }) => {
             <span className="text-xs text-gray-600 font-medium text-center">Agrob<br/>Buchtal</span>
           </button>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="bg-gray-50 text-gray-800 w-80 h-screen fixed left-0 top-0 pt-6 px-6 overflow-y-auto font-sans transition-all duration-300">
+    <>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`bg-gray-50 text-gray-800 w-80 h-screen fixed left-0 top-0 pt-6 px-6 overflow-y-auto font-sans transition-all duration-300 z-50 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
       {/* Expanded Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -221,7 +246,8 @@ const Sidebar = ({ activeSection, setActiveSection, onCollapseChange }) => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
