@@ -488,7 +488,7 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
       <div className="w-full max-w-4xl mx-auto mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Internal Product & Pricing Hub</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Internal Hub</h2>
             <p className="text-base text-gray-600 mb-6 font-sans">Search products to access prices, margin details, distributor price levels, drawings.</p>
             
             <div className="relative mb-6">
@@ -501,37 +501,7 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
                 <Search className="w-5 h-5" />
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Quick Actions Tags - Lightweight style matching My Prices page */}
-      <div className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto mb-8">
-        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
-          <FileText className="w-3 h-3" strokeWidth={1.5} />
-          Product Drawings
-        </button>
-
-        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
-          <ClipboardCheck className="w-3 h-3" strokeWidth={1.5} />
-          Technical Specs
-        </button>
-
-        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
-          <BarChart className="w-3 h-3" strokeWidth={1.5} />
-          Distributor Tiers
-        </button>
-
-        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
-          <DollarSign className="w-3 h-3" strokeWidth={1.5} />
-          Cost Overview
-        </button>
-      </div>
-
-      {/* White container for checkboxes and file buttons */}
-      <div className="w-full max-w-4xl mx-auto mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="text-center">
             {/* File interaction buttons */}
             <div className="flex justify-end items-center gap-4 mb-6">
               <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-200" title="Upload price list">
@@ -561,6 +531,31 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
             </div>
           </div>
         </div>
+      </div>
+
+
+
+      {/* Quick Actions Tags - Lightweight style matching My Prices page */}
+      <div className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto mb-8">
+        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
+          <FileText className="w-3 h-3" strokeWidth={1.5} />
+          Product Drawings
+        </button>
+
+        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
+          <ClipboardCheck className="w-3 h-3" strokeWidth={1.5} />
+          Technical Specs
+        </button>
+
+        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
+          <BarChart className="w-3 h-3" strokeWidth={1.5} />
+          Distributor Tiers
+        </button>
+
+        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-gray-50 rounded-full text-xs font-light text-gray-500 transition-all duration-200 border border-gray-200 hover:border-gray-300">
+          <DollarSign className="w-3 h-3" strokeWidth={1.5} />
+          Cost Overview
+        </button>
       </div>
 
       {/* Pricing Management Dashboard */}

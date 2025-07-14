@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Upload, Search, Check, Info, Maximize2, BookOpen } from 'lucide-react';
+import { Upload, Search, Check, Info, Maximize2, BookOpen, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { UNIT_SYSTEMS, getFieldConfig, formatConversion } from '../utils/unitConversions';
 
 const GetProjectQuote = () => {
   const [unitSystem, setUnitSystem] = useState(UNIT_SYSTEMS.METRIC);
   const [showUnitTooltip, setShowUnitTooltip] = useState(false);
+  const [isMobileAIExpanded, setIsMobileAIExpanded] = useState(false);
   const [formData, setFormData] = useState({
     facadePanelMaterial: '',
     claddingThickness: '',
@@ -203,6 +204,42 @@ const GetProjectQuote = () => {
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Get a Project Quote</h2>
             <p className="text-base text-gray-600 font-sans">Fill out the form below. Ask the AI for help or details at any step.</p>
+          </div>
+
+          {/* Mobile AI Assistant - Above Form */}
+          <div className="lg:hidden mb-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div
+                onClick={() => setIsMobileAIExpanded(!isMobileAIExpanded)}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 font-sans">AI Assistant</h3>
+                    <p className="text-xs text-gray-500 font-sans">Need help filling the form?</p>
+                  </div>
+                </div>
+                {isMobileAIExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-600" />
+                )}
+              </div>
+              
+              {isMobileAIExpanded && (
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <textarea
+                    name="aiQuestion"
+                    value={formData.aiQuestion}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 resize-none text-base font-sans transition-all duration-200"
+                    placeholder="Unsure what to fill in? Ask me, I can explain and fill in for you."
+                  />
+                </div>
+              )}
+            </div>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -692,8 +729,8 @@ const GetProjectQuote = () => {
           </form>
         </div>
 
-        {/* AI Assistance Panel */}
-        <div className="w-80">
+        {/* AI Assistance Panel - Desktop Only */}
+        <div className="hidden lg:block w-80">
           <div className="bg-white rounded-xl shadow-md p-5 sticky top-8">
             <h3 className="text-sm font-medium text-gray-700 mb-3 font-sans">AI Assistant</h3>
             <textarea
