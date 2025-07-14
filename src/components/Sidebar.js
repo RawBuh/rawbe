@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { PlusCircle, Home, Settings, Table, DollarSign, Shield, ClipboardCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const Sidebar = ({ activeSection, setActiveSection, onCollapseChange, sidebarOpen, setSidebarOpen }) => {
+const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // Check if we're on mobile (this is a simple check, in production you might want to use a hook)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
 
   const navigationItems = [
     { id: 'new-chat', label: 'New Chat', icon: PlusCircle, type: 'action' },
@@ -28,25 +31,27 @@ const Sidebar = ({ activeSection, setActiveSection, onCollapseChange, sidebarOpe
   };
 
   const toggleCollapse = () => {
-    const newCollapsedState = !isCollapsed;
-    setIsCollapsed(newCollapsedState);
-    onCollapseChange?.(newCollapsedState);
+    setIsCollapsed(!isCollapsed);
   };
 
   if (isCollapsed) {
     return (
       <>
         {/* Mobile Overlay */}
-        {sidebarOpen && (
+        {sidebarOpen && isMobile && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
             onClick={() => setSidebarOpen(false)}
           />
         )}
         
         {/* Sidebar */}
-        <div className={`bg-gray-50 text-gray-800 w-24 h-screen fixed left-0 top-0 pt-6 px-3 overflow-y-auto font-sans transition-all duration-300 z-50 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        <div className={`bg-gray-50 text-gray-800 w-24 h-screen pt-6 px-3 overflow-y-auto font-sans transition-all duration-300 ${
+          // Mobile behavior
+          isMobile ? 
+            `fixed left-0 top-0 z-50 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}` :
+            // Desktop behavior
+            'relative'
         }`}>
         {/* Collapsed Header */}
         <div className="mb-8 flex flex-col items-center">
@@ -123,16 +128,20 @@ const Sidebar = ({ activeSection, setActiveSection, onCollapseChange, sidebarOpe
   return (
     <>
       {/* Mobile Overlay */}
-      {sidebarOpen && (
+      {sidebarOpen && isMobile && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={() => setSidebarOpen(false)}
         />
       )}
       
       {/* Sidebar */}
-      <div className={`bg-gray-50 text-gray-800 w-80 h-screen fixed left-0 top-0 pt-6 px-6 overflow-y-auto font-sans transition-all duration-300 z-50 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      <div className={`bg-gray-50 text-gray-800 w-80 h-screen pt-6 px-6 overflow-y-auto font-sans transition-all duration-300 ${
+        // Mobile behavior
+        isMobile ? 
+          `fixed left-0 top-0 z-50 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}` :
+          // Desktop behavior
+          'relative'
       }`}>
       {/* Expanded Header */}
       <div className="mb-8">
