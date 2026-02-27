@@ -11,6 +11,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
     { id: 'new-chat', label: 'New Chat', icon: PlusCircle, type: 'action' },
     { id: 'my-projects', label: 'My Projects', icon: Home, type: 'link' },
     { id: 'get-project-quote', label: 'Get Quote', icon: ClipboardCheck, type: 'link' },
+    { id: 'get-quote-2', label: 'Get Quote 2', icon: ClipboardCheck, type: 'link' },
   ];
 
   const qventItems = [

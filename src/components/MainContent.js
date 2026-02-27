@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, BarChart, MessageSquare, Calculator, Filter, ExternalLink, Upload, Download, FileText, Truck, Settings, Table, DollarSign, ClipboardCheck, Menu } from 'lucide-react';
 import GetProjectQuote from '../pages/GetProjectQuote';
+import GetQuote2 from '../pages/GetQuote2';
 
 const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -590,6 +591,8 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
         return <SystemsView />;
       case 'get-project-quote':
         return <GetProjectQuote />;
+      case 'get-quote-2':
+        return <GetQuote2 />;
       case 'my-prices-dealers':
         return <PriceCheckView />;
       case 'our-prices-sales':
