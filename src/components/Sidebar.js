@@ -104,22 +104,8 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
             <span className="text-xs text-gray-600 font-medium text-center">Q-VENT</span>
           </button>
 
-          {/* AGROB BUCHTAL Collapsed */}
-          <button
-            onClick={() => handleNavClick('keratwin')}
-            className="flex flex-col items-center hover:bg-gray-100 p-2 rounded-lg transition-all duration-200"
-            title="Access AGROB BUCHTAL terracotta panels"
-          >
-            <div className="w-5 h-5 relative group mb-2">
-              <div className="w-5 h-5 border-2 border-gray-400 rounded-full"></div>
-              <div className="absolute inset-0 w-5 h-5 border-2 border-gray-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" 
-                   style={{
-                     background: 'conic-gradient(from 0deg, #6b7280 0deg, #6b7280 120deg, transparent 120deg, transparent 360deg)',
-                     borderRadius: '50%'
-                   }}></div>
-            </div>
-            <span className="text-xs text-gray-600 font-medium text-center">Agrob<br/>Buchtal</span>
-          </button>
+          {/* AGROB BUCHTAL Collapsed - hidden for now */}
+          {/* Intentionally not rendered */}
         </div>
         </div>
       </>
@@ -220,41 +206,8 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
           </div>
         </div>
 
-        {/* AGROB BUCHTAL AI Module */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
-          <div className="mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 relative group">
-                <div className="w-5 h-5 border-2 border-gray-400 rounded-full"></div>
-                <div className="absolute inset-0 w-5 h-5 border-2 border-gray-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" 
-                     style={{
-                       background: 'conic-gradient(from 0deg, #6b7280 0deg, #6b7280 120deg, transparent 120deg, transparent 360deg)',
-                       borderRadius: '50%'
-                     }}></div>
-              </div>
-              <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide font-sans">
-                AGROB BUCHTAL
-              </h3>
-            </div>
-          </div>
-          <div className="flex flex-col space-y-1">
-            {agrobItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                title={`${item.label} - Access Agrob Buchtal module functionality`}
-                className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-md transition-all duration-200 text-sm font-normal font-sans ${
-                  activeSection === item.id
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
-                <span className="whitespace-nowrap">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* AGROB BUCHTAL AI Module - hidden for now */}
+        {/* Intentionally not rendered */}
       </div>
       </div>
     </>
