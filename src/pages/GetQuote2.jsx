@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Info, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 
 const GetQuote2 = () => {
   const [isMobileAIExpanded, setIsMobileAIExpanded] = useState(false);
