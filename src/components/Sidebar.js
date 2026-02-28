@@ -21,6 +21,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
     { id: 'admin-sales', label: 'Admin (QV team)', icon: Shield },
   ];
 
+  // eslint-disable-next-line no-unused-vars -- Hidden: Agrob Buchtal section
   const agrobItems = [
     { id: 'keratwin', label: 'Terracotta panels', icon: Table },
     { id: 'my-prices-agrob', label: 'My Prices (AB distr)', icon: DollarSign },
