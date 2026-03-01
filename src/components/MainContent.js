@@ -315,7 +315,7 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
     <div className="min-h-screen flex flex-col font-sans px-8 pt-16">
       {/* Main Logo/Title - Aligned with sidebar */}
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-semibold text-gray-900 mb-4 font-sans tracking-tight">Rawbe</h1>
+        <h1 className="text-5xl font-semibold text-gray-900 mb-4 font-sans tracking-tight">RAWBE</h1>
         <p className="text-lg text-gray-600 font-sans">Discover. Match. Source. Façades</p>
       </div>
 

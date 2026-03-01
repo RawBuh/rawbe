@@ -11,7 +11,10 @@ const GetQuote2 = () => {
     postcode: '',
     contactPerson: '',
     contactEmail: '',
+    city: '',
     country: '',
+    totalFacadeArea: '',
+    startDate: '',
     
     // Building Parameters
     buildingHeight: '',
@@ -24,11 +27,11 @@ const GetQuote2 = () => {
     
     // Wind Load
     windLoadTypical: '',
-    windLoadTypicalSF: 'no',
     windLoadCorner: '',
-    windLoadCornerSF: 'no',
     windLoadFunneling: '',
-    windLoadFunnelingSF: 'no',
+    applySafetyFactor: 'no',
+    windLoadSiteAddress: '',
+    windLoadPostcode: '',
     
     // Cladding Type
     claddingType: '',
@@ -53,10 +56,12 @@ const GetQuote2 = () => {
     
     // Wall Bracket
     wallBracket: '',
+    wallBracketSize: '',
     
     // Installation (formerly Substrate)
     substrateType: '',
     layoutOutlook: '',
+    panelOrientation: '',
     studThickness: '',
     studMaterial: '',
     steelWorkThickness: '3',
@@ -66,7 +71,8 @@ const GetQuote2 = () => {
     topHatChannelMaterial: '',
     
     // AI Question
-    aiQuestion: ''
+    aiQuestion: '',
+    termsAccepted: false
   });
 
   const claddingTypes = [
@@ -107,12 +113,14 @@ const GetQuote2 = () => {
     { value: 'QTB', label: 'QTB Stainless Steel Wall bracket' }
   ];
 
+  const wallBracketSizes = ['L-50', 'L-75', 'L-100', 'L-125', 'L-150', 'L-180', 'L-210', 'L-240'];
+
   const substrateTypes = [
     'Stud',
     'Steel work',
     'Concrete',
     'Masonry',
-    'Top Hat / C-channel',
+    'Top Hat / C-Channel',
     'Timber'
   ];
 
@@ -173,19 +181,18 @@ const GetQuote2 = () => {
         <div className="flex-1 min-w-0 space-y-8">
           {/* Page Header */}
           <div className="mb-8 lg:mb-0">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Get Quote 2</h2>
-            <p className="text-base text-gray-600 font-sans">Technical specification form for facade system calculations.</p>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Apple Calculator</h2>
           </div>
-            {/* Layer 1: System Define */}
+            {/* Layer 1: Cladding */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  System Define
+                  Cladding
                 </h3>
                 <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Cladding Type <span className="text-red-500">*</span>
+                      Type <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="claddingType"
@@ -218,13 +225,13 @@ const GetQuote2 = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Cladding Thickness <span className="text-red-500">*</span>
+                      Thickness <span className="text-red-500">*</span>
                     </label>
                     {renderInputWithUnit('claddingThickness', 'mm', '', true)}
                   </div>
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Cladding Weight <span className="text-red-500">*</span>
+                      Weight <span className="text-red-500">*</span>
                     </label>
                     {renderInputWithUnit('claddingWeight', 'kg/sq.m', '', true)}
                   </div>
@@ -248,20 +255,20 @@ const GetQuote2 = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Layout outlook <span className="text-red-500">*</span>
+                      Fastening Type <span className="text-red-500">*</span>
                     </label>
                     <div className="flex gap-4">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
                           name="layoutOutlook"
-                          value="visible fixing"
-                          checked={formData.layoutOutlook === 'visible fixing'}
+                          value="visible"
+                          checked={formData.layoutOutlook === 'visible'}
                           onChange={handleInputChange}
                           required
                           className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
                         />
-                        <span className="text-sm text-gray-700">Visible fixing</span>
+                        <span className="text-sm text-gray-700">Visible</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -278,22 +285,32 @@ const GetQuote2 = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Substrate Type <span className="text-red-500">*</span>
+                      Panel Orientation
                     </label>
-                    <select
-                      name="substrateType"
-                      value={formData.substrateType}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                    >
-                      <option value="">Select substrate type</option>
-                      {substrateTypes.map((type, index) => (
-                        <option key={index} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="panelOrientation"
+                          value="vertical"
+                          checked={formData.panelOrientation === 'vertical'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span className="text-sm text-gray-700">Vertical</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="panelOrientation"
+                          value="horizontal"
+                          checked={formData.panelOrientation === 'horizontal'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span className="text-sm text-gray-700">Horizontal</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
                 </div>
@@ -310,10 +327,10 @@ const GetQuote2 = () => {
                   return (
                     <label
                       key={system.id}
-                      className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border-2 border-gray-900 transition-all duration-200 text-center ${
+                      className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border-2 transition-all duration-200 text-center ${
                         !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
                           : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
-                          : 'bg-white border-gray-900 text-gray-900 hover:bg-gray-50 cursor-pointer'
+                          : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
                       }`}
                     >
                       <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
@@ -338,24 +355,34 @@ const GetQuote2 = () => {
                   )}
                 </div>
               )}
-              <div className="mt-4 pt-4 border-t border-red-200">
+              <div className="mt-4 pt-4 border-t border-red-200 space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                  <input
+                    type="checkbox"
+                    name="termsAccepted"
+                    checked={formData.termsAccepted}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                  />
+                  <span>Terms and Conditions accepted</span>
+                </label>
                 <button
                   type="submit"
-                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200"
+                  disabled={!formData.termsAccepted}
+                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Get quote
                 </button>
               </div>
             </div>
 
-            {/* Layer 2: System Design */}
+            {/* Building */}
             <div className="mt-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  System Design
+                  Building
                 </h3>
-              <div className="space-y-4">
-                <h4 className="text-base font-medium text-gray-800 mb-3 font-sans">Building info</h4>
+                <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
@@ -371,8 +398,8 @@ const GetQuote2 = () => {
                   </div>
                 </div>
 
-                {/* Cavity Depth 1 & 2 */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Cavity Depth 1, Cavity Depth 2, Insulation Thickness – one row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 1</label>
                     {renderInputWithUnit('cavityDepthMin', 'mm')}
@@ -381,62 +408,36 @@ const GetQuote2 = () => {
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 2</label>
                     {renderInputWithUnit('cavityDepthMax', 'mm')}
                   </div>
-                </div>
-
-                {/* Top Hat & Insulation Thickness */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Top Hat</label>
-                    <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="topHat"
-                            value="yes"
-                            checked={formData.topHat === 'yes'}
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                          />
-                          <span className="text-sm text-gray-700">Yes</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="topHat"
-                            value="no"
-                            checked={formData.topHat === 'no'}
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                          />
-                          <span className="text-sm text-gray-700">No</span>
-                        </label>
-                    </div>
-                    {formData.topHat === 'yes' && (
-                      <div className="mt-3">
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Top Hat Depth</label>
-                        {renderInputWithUnit('topHatDepth', 'mm')}
-                      </div>
-                    )}
-                  </div>
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness</label>
                     {renderInputWithUnit('insulationThickness', 'mm')}
                   </div>
                 </div>
 
-                {/* Substrate Type Specifics - depends on Substrate Type above */}
-                <div className="pl-4 border-l-4 border-gray-200 bg-gray-50/50 rounded-r-lg py-3 pr-3 space-y-4">
+                {/* Substrate Type + Substrate Type Specifics – one row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-800 mb-0.5 font-sans">Substrate Type Specifics</h4>
-                    <p className="text-xs text-gray-500 font-sans">Based on Substrate Type selected above</p>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Substrate Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="substrateType"
+                      value={formData.substrateType}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    >
+                      <option value="">Select substrate type</option>
+                      {substrateTypes.map((type, index) => (
+                        <option key={index} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  {!formData.substrateType && (
-                    <p className="text-sm text-gray-400 italic font-sans">Select a substrate type above to see specifications.</p>
-                  )}
+                  <div className="space-y-4">
                   {formData.substrateType === 'Stud' && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-4">
-                      <h4 className="text-sm font-medium text-gray-800 font-sans">Stud Specifications</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
                           <select name="studThickness" value={formData.studThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
@@ -452,12 +453,9 @@ const GetQuote2 = () => {
                           </select>
                         </div>
                       </div>
-                    </div>
                   )}
                   {formData.substrateType === 'Steel work' && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-4">
-                      <h4 className="text-sm font-medium text-gray-800 font-sans">Steel Work Specifications</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
                           <input type="text" name="steelWorkThickness" value={formData.steelWorkThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="3 mm" />
@@ -470,100 +468,135 @@ const GetQuote2 = () => {
                           </select>
                         </div>
                       </div>
-                    </div>
                   )}
                   {formData.substrateType === 'Concrete' && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                      <h4 className="text-sm font-medium text-gray-800 font-sans mb-3">Concrete Specifications</h4>
-                      <div>
+                    <div>
                         <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Concrete Grade</label>
                         <input type="text" name="concreteGrade" value={formData.concreteGrade} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="C20/25 (default)" />
+                    </div>
+                  )}
+                  {formData.substrateType === 'Top Hat / C-Channel' && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
+                        <select name="topHatChannelThickness" value={formData.topHatChannelThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                          <option value="">Select thickness</option>
+                          {topHatThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
+                        <input type="text" name="topHatChannelMaterial" value={formData.topHatChannelMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="5754 H22" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth</label>
+                        {renderInputWithUnit('topHatDepth', 'mm')}
                       </div>
                     </div>
                   )}
-                  {formData.substrateType === 'Top Hat / C-channel' && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-4">
-                      <h4 className="text-sm font-medium text-gray-800 font-sans">Top Hat / C-channel Specifications</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
-                          <select name="topHatChannelThickness" value={formData.topHatChannelThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
-                            <option value="">Select thickness</option>
-                            {topHatThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
-                          <input type="text" name="topHatChannelMaterial" value={formData.topHatChannelMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="5754 H22" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
+            </div>
 
-                {/* Wind Load */}
-                <div className="space-y-4 pt-6 pb-4 mt-4 border-t border-gray-100">
-                  <h4 className="text-base font-medium text-gray-800 mb-3 font-sans">Wind Load</h4>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Typical (center) zone</label>
-                        {renderInputWithUnit('windLoadTypical', 'kN/sq.m')}
-                      </div>
-                      <div className="flex items-center justify-center md:justify-start gap-4 min-h-[42px]">
-                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                          <input type="radio" name="windLoadTypicalSF" value="no" checked={formData.windLoadTypicalSF === 'no'} onChange={handleInputChange} className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400" />
-                          <span>no SF</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                          <input type="radio" name="windLoadTypicalSF" value="yes" checked={formData.windLoadTypicalSF === 'yes'} onChange={handleInputChange} className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400" />
-                          <span>with SF</span>
-                        </label>
-                      </div>
+            {/* Wind load */}
+            <div className="mt-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
+                  Wind load
+                </h3>
+                <div className="space-y-4">
+                  {/* Typical, Corner, Funneling – one row */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Typical (center) zone</label>
+                      {renderInputWithUnit('windLoadTypical', 'kN/sq.m')}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Corner zone</label>
-                        {renderInputWithUnit('windLoadCorner', 'kN/sq.m')}
-                      </div>
-                      <div className="flex items-center justify-center md:justify-start gap-4 min-h-[42px]">
-                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                          <input type="radio" name="windLoadCornerSF" value="no" checked={formData.windLoadCornerSF === 'no'} onChange={handleInputChange} className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400" />
-                          <span>no SF</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                          <input type="radio" name="windLoadCornerSF" value="yes" checked={formData.windLoadCornerSF === 'yes'} onChange={handleInputChange} className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400" />
-                          <span>with SF</span>
-                        </label>
-                      </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Corner zone</label>
+                      {renderInputWithUnit('windLoadCorner', 'kN/sq.m')}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Funneling zone</label>
-                        {renderInputWithUnit('windLoadFunneling', 'kN/sq.m')}
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Funneling zone</label>
+                      {renderInputWithUnit('windLoadFunneling', 'kN/sq.m')}
+                    </div>
+                  </div>
+                  {/* Apply Safety Factor – below, Yes / No */}
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Apply Safety Factor</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="applySafetyFactor"
+                          value="yes"
+                          checked={formData.applySafetyFactor === 'yes'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>Yes</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="applySafetyFactor"
+                          value="no"
+                          checked={formData.applySafetyFactor === 'no'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>No</span>
+                      </label>
+                    </div>
+                  </div>
+                  {/* Get Wind Load by site location */}
+                  <div className="pt-4 border-t border-gray-100">
+                    <label className="block text-sm font-medium text-gray-900 mb-2 font-sans">
+                      Don't know the values?
+                    </label>
+                    <p className="text-xs text-gray-500 font-sans mb-3">
+                      Enter the site address and postcode below.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Site Address</label>
+                        <input
+                          type="text"
+                          name="windLoadSiteAddress"
+                          value={formData.windLoadSiteAddress}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                          placeholder="Enter site address"
+                        />
                       </div>
-                      <div className="flex items-center justify-center md:justify-start gap-4 min-h-[42px]">
-                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                          <input type="radio" name="windLoadFunnelingSF" value="no" checked={formData.windLoadFunnelingSF === 'no'} onChange={handleInputChange} className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400" />
-                          <span>no SF</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                          <input type="radio" name="windLoadFunnelingSF" value="yes" checked={formData.windLoadFunnelingSF === 'yes'} onChange={handleInputChange} className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400" />
-                          <span>with SF</span>
-                        </label>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Postcode</label>
+                        <input
+                          type="text"
+                          name="windLoadPostcode"
+                          value={formData.windLoadPostcode}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                          placeholder="Enter postcode"
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Vertical Profile */}
-                <div className="space-y-3 pt-6 pb-6 mt-4 border-t border-gray-100">
-                  <h4 className="text-base font-medium text-gray-800 mb-3 font-sans">Primary Subframe</h4>
+            {/* Primary substructure */}
+            <div className="mt-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
+                  Primary substructure
+                </h3>
+                <div className="space-y-4">
                 {/* Select Type + Cross-section - row 1 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                   {/* Select Type - compact */}
-                  <div>
+                  <div className="min-w-0">
                     <div className="grid grid-cols-2 gap-2">
                       <div
                         onClick={() => setFormData(prev => ({ ...prev, verticalProfileType: 'T', verticalProfileSize: '' }))}
@@ -597,7 +630,7 @@ const GetQuote2 = () => {
                   </div>
                   {/* Cross-section Size */}
                   {formData.verticalProfileType && (
-                    <div>
+                    <div className="min-w-[12rem]">
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                         {verticalProfiles[formData.verticalProfileType].sizes.map((size) => (
                           <label
@@ -673,35 +706,72 @@ const GetQuote2 = () => {
                 </div>
               </div>
 
-                {/* Wall Bracket */}
+                {/* Wall Bracket – same layout as Select Type + Cross-section */}
                 <div className="pt-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {wallBracketTypes.map((bracket) => (
-                  <label
-                    key={bracket.value}
-                    className="flex items-center gap-2 cursor-pointer text-sm"
-                  >
-                    <input
-                      type="radio"
-                      name="wallBracket"
-                      value={bracket.value}
-                      checked={formData.wallBracket === bracket.value}
-                      onChange={handleInputChange}
-                      className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                    />
-                    <span className="font-normal text-gray-700">{bracket.label}</span>
-                  </label>
-                ))}
+                  <div className="h-5" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div className="min-w-0">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div
+                          onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QVB', wallBracketSize: '' }))}
+                          className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                            formData.wallBracket === 'QVB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
+                              <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QVB' ? '#6B7280' : '#D1D5DB'} />
+                            </svg>
+                            <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QVB' ? 'text-gray-900' : 'text-gray-600'}`}>Aluminum<br />Wall Brackets</span>
+                          </div>
+                        </div>
+                        <div
+                          onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QTB', wallBracketSize: '' }))}
+                          className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                            formData.wallBracket === 'QTB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
+                              <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QTB' ? '#6B7280' : '#D1D5DB'} />
+                              <circle cx="48" cy="41" r="3" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                            </svg>
+                            <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QTB' ? 'text-gray-900' : 'text-gray-600'}`}>Stainless Steel<br />Wall bracket</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {formData.wallBracket && (
+                      <div className="min-w-[12rem]">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                          {wallBracketSizes.map((size) => (
+                            <label
+                              key={size}
+                              className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
+                                formData.wallBracketSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                              }`}
+                            >
+                              <input type="radio" name="wallBracketSize" value={size} checked={formData.wallBracketSize === size} onChange={handleInputChange} className="sr-only" />
+                              <span>{size}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </div>
                 </div>
               </div>
             </div>
 
-            {/* Layer 3: Project Information */}
-            <div className="mt-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 space-y-4">
+            {/* Layer 3: Project */}
+            <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 space-y-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  Project Information
+                  Project
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -731,32 +801,18 @@ const GetQuote2 = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                    Site Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="siteAddress"
-                    value={formData.siteAddress}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                  />
-                </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Postcode <span className="text-red-500">*</span>
+                      City
                     </label>
                     <input
                       type="text"
-                      name="postcode"
-                      value={formData.postcode}
+                      name="city"
+                      value={formData.city}
                       onChange={handleInputChange}
-                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                      placeholder="Enter city"
                     />
                   </div>
                   <div>
@@ -771,6 +827,34 @@ const GetQuote2 = () => {
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
                       placeholder="Enter country"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Total Facade Area
+                    </label>
+                    <input
+                      type="text"
+                      name="totalFacadeArea"
+                      value={formData.totalFacadeArea}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                      placeholder="sq.m"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -809,7 +893,7 @@ const GetQuote2 = () => {
                     Project Files
                   </label>
                   <p className="text-xs font-light text-gray-500 font-sans mb-2">
-                    Optional: Upload architectural drawings, structural calculations, etc.
+                    Optional: Upload architectural drawings, or any other files that will help to get more precise quote.
                   </p>
                   <label htmlFor="file-upload-2" className="block cursor-pointer">
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50/30 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
@@ -833,7 +917,6 @@ const GetQuote2 = () => {
                   </p>
                 </div>
               </div>
-            </div>
 
         </div>
 
@@ -849,10 +932,10 @@ const GetQuote2 = () => {
                 return (
                   <label
                     key={system.id}
-                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 border-gray-900 transition-all duration-200 text-center ${
+                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 transition-all duration-200 text-center ${
                       !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
                         : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
-                        : 'bg-white border-gray-900 text-gray-900 hover:bg-gray-50 cursor-pointer'
+                        : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
                     }`}
                   >
                     <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
@@ -877,10 +960,21 @@ const GetQuote2 = () => {
                 )}
               </div>
             )}
-            <div className="mt-4 pt-4 border-t border-red-200">
+            <div className="mt-4 pt-4 border-t border-red-200 space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                <input
+                  type="checkbox"
+                  name="termsAccepted"
+                  checked={formData.termsAccepted}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                />
+                <span>Terms and Conditions accepted</span>
+              </label>
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200"
+                disabled={!formData.termsAccepted}
+                className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Get quote
               </button>
