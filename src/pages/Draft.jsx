@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, MessageSquare, X } from 'lucide-react';
 
-const GetQuote2 = () => {
+const Draft = () => {
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
   const [formData, setFormData] = useState({
     // Project Info
@@ -30,6 +30,8 @@ const GetQuote2 = () => {
     windLoadCorner: '',
     windLoadFunneling: '',
     applySafetyFactor: 'no',
+    windLoadSiteAddress: '',
+    windLoadPostcode: '',
     
     // Cladding Type
     claddingType: '',
@@ -59,6 +61,7 @@ const GetQuote2 = () => {
     // Installation (formerly Substrate)
     substrateType: '',
     layoutOutlook: '',
+    panelOrientation: '',
     studThickness: '',
     studMaterial: '',
     steelWorkThickness: '3',
@@ -141,11 +144,6 @@ const GetQuote2 = () => {
         }
       }
 
-      // When wall bracket type changes, clear size
-      if (name === 'wallBracket') {
-        next.wallBracketSize = '';
-      }
-
       return next;
     });
   };
@@ -178,94 +176,203 @@ const GetQuote2 = () => {
         <div className="flex-1 min-w-0 space-y-8">
           {/* Page Header */}
           <div className="mb-8 lg:mb-0">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Apple Calculator</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Apple Draft</h2>
           </div>
-
-            {/* Project – top section */}
+            {/* Layer 1: Cladding */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
-              <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                Project
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                    Project name <span className="text-red-500">*</span>
-                  </label>
+                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
+                  Cladding
+                </h3>
+                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="claddingType"
+                      value={formData.claddingType}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    >
+                      <option value="">Select cladding type</option>
+                      {claddingTypes.map((type, index) => (
+                        <option key={index} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Brand
+                    </label>
+                    <input
+                      type="text"
+                      name="claddingBrand"
+                      value={formData.claddingBrand}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                      placeholder="Enter brand name"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Thickness <span className="text-red-500">*</span>
+                    </label>
+                    {renderInputWithUnit('claddingThickness', 'mm', '', true)}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Weight <span className="text-red-500">*</span>
+                    </label>
+                    {renderInputWithUnit('claddingWeight', 'kg/sq.m', '', true)}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Panel Dimension B (width) <span className="text-red-500">*</span>
+                    </label>
+                    {renderInputWithUnit('panelDimensionB', 'mm', '', true)}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Panel Dimension H (height) <span className="text-red-500">*</span>
+                    </label>
+                    {renderInputWithUnit('panelDimensionH', 'mm', '', true)}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Fastening Type <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="layoutOutlook"
+                          value="visible"
+                          checked={formData.layoutOutlook === 'visible'}
+                          onChange={handleInputChange}
+                          required
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span className="text-sm text-gray-700">Visible</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="layoutOutlook"
+                          value="concealed"
+                          checked={formData.layoutOutlook === 'concealed'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span className="text-sm text-gray-700">Concealed</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Panel Orientation
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="panelOrientation"
+                          value="vertical"
+                          checked={formData.panelOrientation === 'vertical'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span className="text-sm text-gray-700">Vertical</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="panelOrientation"
+                          value="horizontal"
+                          checked={formData.panelOrientation === 'horizontal'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span className="text-sm text-gray-700">Horizontal</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                </div>
+              </div>
+
+            {/* Your Configuration – mobile only (desktop: in right sidebar) */}
+            <div className="lg:hidden bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5">
+              <h3 className="text-lg font-medium text-gray-900 font-sans mb-4">Your Configuration</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {qvSystems.map((system) => {
+                  const isAgrobCladding = formData.claddingType === 'AGROB BUCHTAL KeraTwin K20';
+                  const isEnabled = !isAgrobCladding || system.id === 'QV3';
+                  const isActive = formData.qvSystem === system.id;
+                  return (
+                    <label
+                      key={system.id}
+                      className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border-2 transition-all duration-200 text-center ${
+                        !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
+                          : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
+                          : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
+                      }`}
+                    >
+                      <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
+                      <span className="text-sm font-medium">{system.id}</span>
+                      <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formData.qvSystem && (
+                <div className="mt-4 border-t border-red-200 pt-4">
+                  <h4 className="text-sm font-medium text-gray-800 mb-2 font-sans">Components</h4>
+                  {formData.qvSystem === 'QV3' ? (
+                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 font-sans">
+                      <li><span className="font-medium">System rails</span> <span className="text-gray-500">(profiles 695, 690, 698)</span></li>
+                      <li><span className="font-medium">Wall brackets</span></li>
+                      <li><span className="font-medium">Accessories</span></li>
+                      <li><span className="font-medium">Fasteners</span></li>
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-gray-500 font-sans">Configuration details will be added later.</p>
+                  )}
+                </div>
+              )}
+              <div className="mt-4 pt-4 border-t border-red-200 space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
                   <input
-                    type="text"
-                    name="projectName"
-                    value={formData.projectName}
+                    type="checkbox"
+                    name="termsAccepted"
+                    checked={formData.termsAccepted}
                     onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                    placeholder="Enter project name"
+                    className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
                   />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Site Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="siteAddress"
-                      value={formData.siteAddress}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                      placeholder="Enter site address"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Postcode <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="postcode"
-                      value={formData.postcode}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                      placeholder="Enter postcode"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Contact Person <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="contactPerson"
-                      value={formData.contactPerson}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                      placeholder="Enter contact person"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      E-mail <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="contactEmail"
-                      value={formData.contactEmail}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                      placeholder="Enter e-mail"
-                    />
-                  </div>
-                </div>
+                  <span>Terms and Conditions accepted</span>
+                </label>
+                <button
+                  type="submit"
+                  disabled={!formData.termsAccepted}
+                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Get quote
+                </button>
               </div>
             </div>
 
             {/* Building */}
-            <div className="mt-8">
+            <div className="mt-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
                   Building
@@ -388,7 +495,7 @@ const GetQuote2 = () => {
             </div>
 
             {/* Wind load */}
-            <div className="mt-8">
+            <div className="mt-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
                   Wind load
@@ -437,130 +544,45 @@ const GetQuote2 = () => {
                       </label>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Layer 1: Cladding */}
-            <div className="mt-8">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
-                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  Cladding
-                </h3>
-                <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Type <span className="text-red-500">*</span>
+                  {/* Get Wind Load by site location */}
+                  <div className="pt-4 border-t border-gray-100">
+                    <label className="block text-sm font-medium text-gray-900 mb-2 font-sans">
+                      Don't know the values?
                     </label>
-                    <select
-                      name="claddingType"
-                      value={formData.claddingType}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                    >
-                      <option value="">Select cladding type</option>
-                      {claddingTypes.map((type, index) => (
-                        <option key={index} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Brand
-                    </label>
-                    <input
-                      type="text"
-                      name="claddingBrand"
-                      value={formData.claddingBrand}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                      placeholder="Enter brand name"
-                    />
+                    <p className="text-xs text-gray-500 font-sans mb-3">
+                      Enter the site address and postcode below.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Site Address</label>
+                        <input
+                          type="text"
+                          name="windLoadSiteAddress"
+                          value={formData.windLoadSiteAddress}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                          placeholder="Enter site address"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Postcode</label>
+                        <input
+                          type="text"
+                          name="windLoadPostcode"
+                          value={formData.windLoadPostcode}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                          placeholder="Enter postcode"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Thickness <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('claddingThickness', 'mm', '', true)}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Weight <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('claddingWeight', 'kg/sq.m', '', true)}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Panel Dimension B (width) <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('panelDimensionB', 'mm', '', true)}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Panel Dimension H (height) <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('panelDimensionH', 'mm', '', true)}
-                  </div>
-                </div>
-                </div>
-              </div>
-            </div>
-
-            {/* QV System */}
-            <div className="mt-8">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
-                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  QV System
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {qvSystems.map((system) => {
-                    const isAgrobCladding = formData.claddingType === 'AGROB BUCHTAL KeraTwin K20';
-                    const isEnabled = !isAgrobCladding || system.id === 'QV3';
-                    const isActive = formData.qvSystem === system.id;
-                    return (
-                      <label
-                        key={system.id}
-                        className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border-2 transition-all duration-200 text-center ${
-                          !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
-                            : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
-                            : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
-                        }`}
-                      >
-                        <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
-                        <span className="text-sm font-medium">{system.id}</span>
-                        <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-                {formData.qvSystem && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h4 className="text-sm font-medium text-gray-800 mb-2 font-sans">Components</h4>
-                    {formData.qvSystem === 'QV3' ? (
-                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 font-sans">
-                        <li><span className="font-medium">System rails</span> <span className="text-gray-500">(profiles 695, 690, 698)</span></li>
-                        <li><span className="font-medium">Wall brackets</span></li>
-                        <li><span className="font-medium">Accessories</span></li>
-                        <li><span className="font-medium">Fasteners</span></li>
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-gray-500 font-sans">Configuration details will be added later.</p>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
             {/* Primary substructure */}
-            <div className="mt-8">
+            <div className="mt-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
                   Primary substructure
@@ -679,38 +701,47 @@ const GetQuote2 = () => {
                 </div>
               </div>
 
-                {/* Wall Bracket – radio buttons */}
+                {/* Wall Bracket – same layout as Select Type + Cross-section */}
                 <div className="pt-4">
                   <div className="h-5" />
-                  <div className="space-y-3">
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Wall Bracket</label>
-                    <div className="flex flex-wrap gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="radio"
-                          name="wallBracket"
-                          value="QVB"
-                          checked={formData.wallBracket === 'QVB'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span>QVB Aluminum Wall Brackets</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="radio"
-                          name="wallBracket"
-                          value="QTB"
-                          checked={formData.wallBracket === 'QTB'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span>QTB Stainless Steel Wall bracket</span>
-                      </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div className="min-w-0">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div
+                          onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QVB', wallBracketSize: '' }))}
+                          className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                            formData.wallBracket === 'QVB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
+                              <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QVB' ? '#6B7280' : '#D1D5DB'} />
+                            </svg>
+                            <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QVB' ? 'text-gray-900' : 'text-gray-600'}`}>Aluminum<br />Wall Brackets</span>
+                          </div>
+                        </div>
+                        <div
+                          onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QTB', wallBracketSize: '' }))}
+                          className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                            formData.wallBracket === 'QTB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
+                              <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                              <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QTB' ? '#6B7280' : '#D1D5DB'} />
+                              <circle cx="48" cy="41" r="3" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                            </svg>
+                            <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QTB' ? 'text-gray-900' : 'text-gray-600'}`}>Stainless Steel<br />Wall bracket</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     {formData.wallBracket && (
-                      <div className="mt-3">
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Size</label>
+                      <div className="min-w-[12rem]">
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                           {wallBracketSizes.map((size) => (
                             <label
@@ -732,11 +763,69 @@ const GetQuote2 = () => {
               </div>
             </div>
 
-            {/* Layer 3: Additional Info */}
-            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 space-y-4">
+            {/* Layer 3: Project */}
+            <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 space-y-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  Additional Info
+                  Project
                 </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Project ref No
+                    </label>
+                    <input
+                      type="text"
+                      name="projectRefNo"
+                      value={formData.projectRefNo}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Project Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="projectName"
+                      value={formData.projectName}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                      placeholder="Enter city"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Country <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                      placeholder="Enter country"
+                    />
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
@@ -760,6 +849,35 @@ const GetQuote2 = () => {
                       name="startDate"
                       value={formData.startDate}
                       onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Contact Person <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="contactPerson"
+                      value={formData.contactPerson}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="contactEmail"
+                      value={formData.contactEmail}
+                      onChange={handleInputChange}
+                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
                     />
                   </div>
@@ -795,28 +913,68 @@ const GetQuote2 = () => {
                 </div>
               </div>
 
-            {/* Terms and Get quote */}
-            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                  <input
-                    type="checkbox"
-                    name="termsAccepted"
-                    checked={formData.termsAccepted}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
-                  />
-                  <span>Terms and Conditions accepted</span>
-                </label>
-                <button
-                  type="submit"
-                  disabled={!formData.termsAccepted}
-                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Get quote
-                </button>
-              </div>
+        </div>
+
+        {/* Right: Your Configuration – sidebar parallel to form */}
+        <div className="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:flex-col">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5 sticky top-8 flex flex-col">
+            <h3 className="text-lg font-medium text-gray-900 font-sans mb-4">Your Configuration</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {qvSystems.map((system) => {
+                const isAgrobCladding = formData.claddingType === 'AGROB BUCHTAL KeraTwin K20';
+                const isEnabled = !isAgrobCladding || system.id === 'QV3';
+                const isActive = formData.qvSystem === system.id;
+                return (
+                  <label
+                    key={system.id}
+                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 transition-all duration-200 text-center ${
+                      !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
+                        : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
+                        : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
+                    }`}
+                  >
+                    <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
+                    <span className="text-sm font-medium">{system.id}</span>
+                    <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
+                  </label>
+                );
+              })}
             </div>
+            {formData.qvSystem && (
+              <div className="mt-4 border-t border-red-200 pt-4">
+                <h4 className="text-sm font-medium text-gray-800 mb-2 font-sans">Components</h4>
+                {formData.qvSystem === 'QV3' ? (
+                  <ul className="list-disc list-inside space-y-1 text-xs text-gray-700 font-sans">
+                    <li>System rails (profiles 695, 690, 698)</li>
+                    <li>Wall brackets</li>
+                    <li>Accessories</li>
+                    <li>Fasteners</li>
+                  </ul>
+                ) : (
+                  <p className="text-xs text-gray-500 font-sans">Configuration details will be added later.</p>
+                )}
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t border-red-200 space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                <input
+                  type="checkbox"
+                  name="termsAccepted"
+                  checked={formData.termsAccepted}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                />
+                <span>Terms and Conditions accepted</span>
+              </label>
+              <button
+                type="submit"
+                disabled={!formData.termsAccepted}
+                className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium text-base font-sans transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Get quote
+              </button>
+            </div>
+          </div>
         </div>
 
             {/* Floating AI Assistant – chat bubble */}
@@ -861,4 +1019,4 @@ const GetQuote2 = () => {
   );
 };
 
-export default GetQuote2;
+export default Draft;
