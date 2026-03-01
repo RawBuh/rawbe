@@ -108,11 +108,6 @@ const GetQuote2 = () => {
     }
   };
 
-  const wallBracketTypes = [
-    { value: 'QVB', label: 'QVB Aluminum Wall Brackets' },
-    { value: 'QTB', label: 'QTB Stainless Steel Wall bracket' }
-  ];
-
   const wallBracketSizes = ['L-50', 'L-75', 'L-100', 'L-125', 'L-150', 'L-180', 'L-210', 'L-240'];
 
   const substrateTypes = [
