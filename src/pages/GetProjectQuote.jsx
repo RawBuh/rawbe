@@ -21,6 +21,7 @@ const GetProjectQuote = () => {
     insulationThickness: '',
     wallType: '',
     bracketMaterialType: '',
+    bracketMaterialTypeSliding: '',
     totalBuildingHeight: '',
     totalFacadeArea: '',
     claddingEngineering: false,
@@ -547,11 +548,28 @@ const GetProjectQuote = () => {
                 {/* Bracket material type */}
                 <div>
                   <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                    Wall Bracket type
+                    Wall bracket type fixed point
                   </label>
                   <select
                     name="bracketMaterialType"
                     value={formData.bracketMaterialType}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                  >
+                    <option value="">Select bracket material</option>
+                    {bracketTypes.map((type, index) => (
+                      <option key={index} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                    Wall bracket type sliding point
+                  </label>
+                  <select
+                    name="bracketMaterialTypeSliding"
+                    value={formData.bracketMaterialTypeSliding}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
                   >

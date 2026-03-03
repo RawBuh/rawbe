@@ -88,7 +88,7 @@ const Draft = () => {
   ];
 
   const qvSystems = [
-    { id: 'QV1', description: 'Exposed Mechanical Fastening' },
+    { id: 'QV1.1', description: 'Exposed Mechanical Fastening', displayLabelId: 'QV1', displayLabelDesc: 'Visible Fixing' },
     { id: 'QV2', description: 'Concealed Adhesive' },
     { id: 'QV3', description: 'KeraTwin K20 Panels' },
     { id: 'QV6', description: 'Concealed Undercut' },
@@ -329,8 +329,8 @@ const Draft = () => {
                       }`}
                     >
                       <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
-                      <span className="text-sm font-medium">{system.id}</span>
-                      <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
+                      <span className="text-sm font-medium">{system.displayLabelId || system.id}</span>
+                      <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.displayLabelDesc || system.description}</span>
                     </label>
                   );
                 })}
@@ -934,8 +934,8 @@ const Draft = () => {
                     }`}
                   >
                     <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
-                    <span className="text-sm font-medium">{system.id}</span>
-                    <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
+                    <span className="text-sm font-medium">{system.displayLabelId || system.id}</span>
+                    <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.displayLabelDesc || system.description}</span>
                   </label>
                 );
               })}

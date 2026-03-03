@@ -143,4 +143,76 @@ select:focus {
 
 .shadow-ai-lg {
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Quote system drawing – fixed size */
+.quote-system-drawing {
+  width: 90mm;
+  max-width: 90mm;
+}
+.quote-system-drawing-img {
+  width: 90mm;
+  max-height: 100mm;
+  object-fit: contain;
+}
+
+/* Structural Calculations on page 2 */
+.quote-page-break-before {
+  page-break-before: always;
+}
+
+/* Print styles – A4, PDF export */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white;
+  }
+  .quote-document {
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+  }
+  .quote-page-1 {
+    page-break-after: always;
+  }
+  .quote-page-break-before {
+    page-break-before: always;
+  }
+  .quote-document h2 {
+    page-break-after: avoid;
+  }
+  .quote-page-active {
+    padding: 0 !important;
+    background: white !important;
+  }
+  .quote-system-drawing {
+    width: 50mm !important;
+    max-width: 50mm !important;
+    flex-shrink: 0 !important;
+  }
+  .quote-system-drawing-img {
+    width: 50mm !important;
+    max-height: 55mm !important;
+  }
+  .quote-content {
+    padding: 10px 14px !important;
+  }
+  .quote-section {
+    margin-bottom: 8px !important;
+  }
+  .quote-section.mb-6 {
+    margin-bottom: 12px !important;
+  }
+  .quote-document .bg-gray-900 {
+    padding: 6px 14px !important;
+  }
 } 

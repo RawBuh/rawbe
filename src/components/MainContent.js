@@ -3,13 +3,14 @@ import { Search, BarChart, MessageSquare, Calculator, Filter, ExternalLink, Uplo
 import GetProjectQuote from '../pages/GetProjectQuote';
 import GetQuote2 from '../pages/GetQuote2';
 import Draft from '../pages/Draft';
+import Quote from '../pages/Quote';
 
 const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('last-month');
 
   const Header = () => (
-    <div className="flex justify-between items-center mb-8 font-sans">
+    <div className="flex justify-between items-center mb-8 font-sans no-print">
       <div className="flex items-center space-x-4">
         {/* Mobile menu button */}
         <button
@@ -172,7 +173,7 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <button className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all duration-200 text-left group min-h-48 flex flex-col justify-start relative">
             <Settings className="w-4 h-4 text-gray-500 absolute top-6 right-6" />
-            <h3 className="text-sm font-medium text-gray-700 font-sans leading-5 mb-2">QV1</h3>
+            <h3 className="text-sm font-medium text-gray-700 font-sans leading-5 mb-2">QV1 - Visible Fixing</h3>
             <p className="text-lg font-semibold text-gray-900 mb-0 font-sans leading-6">VISIBLE</p>
             <p className="text-lg font-semibold text-gray-900 mb-2 font-sans leading-6">FIXING</p>
             <p className="text-xs text-gray-500 font-sans leading-4">for flat panels, options with brackets and horizontal rails in case of stud walls</p>
@@ -593,9 +594,11 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
       case 'get-project-quote':
         return <GetProjectQuote />;
       case 'get-quote-2':
-        return <GetQuote2 />;
+        return <GetQuote2 setActiveSection={setActiveSection} />;
       case 'draft':
         return <Draft />;
+      case 'quote':
+        return <Quote />;
       case 'my-prices-dealers':
         return <PriceCheckView />;
       case 'our-prices-sales':
@@ -618,7 +621,7 @@ const MainContent = ({ activeSection, setActiveSection, setSidebarOpen }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
+    <div className={`p-4 sm:p-6 lg:p-8 min-h-screen ${activeSection === 'quote' ? 'quote-page-active' : ''}`}>
       <Header />
       {renderContent()}
     </div>

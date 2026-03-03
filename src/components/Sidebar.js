@@ -13,6 +13,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
     { id: 'get-project-quote', label: 'Get Quote', icon: ClipboardCheck, type: 'link' },
     { id: 'get-quote-2', label: 'Apple Calculator', icon: ClipboardCheck, type: 'link' },
     { id: 'draft', label: 'Apple Draft', icon: ClipboardCheck, type: 'link' },
+    { id: 'quote', label: 'Quote', icon: ClipboardCheck, type: 'link' },
   ];
 
   const qventItems = [
