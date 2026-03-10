@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
+import ErrorBoundary from './components/ErrorBoundary';
 import { QuoteProvider } from './context/QuoteContext';
 
 function App() {
-  const [activeSection, setActiveSection] = useState('quote');
+  const [activeSection, setActiveSection] = useState('draft');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
+    <ErrorBoundary>
     <QuoteProvider>
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar - hidden on mobile, visible on desktop */}
@@ -40,6 +42,7 @@ function App() {
       </div>
     </div>
     </QuoteProvider>
+    </ErrorBoundary>
   );
 }
 

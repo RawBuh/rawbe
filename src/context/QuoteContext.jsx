@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
-const QuoteContext = createContext(null);
+const defaultContextValue = { quoteData: null, setQuoteData: () => {} };
+const QuoteContext = createContext(defaultContextValue);
 
 export const QuoteProvider = ({ children }) => {
   const [quoteData, setQuoteData] = useState(null);
@@ -11,4 +12,4 @@ export const QuoteProvider = ({ children }) => {
   );
 };
 
-export const useQuote = () => useContext(QuoteContext);
+export const useQuote = () => useContext(QuoteContext) ?? defaultContextValue;

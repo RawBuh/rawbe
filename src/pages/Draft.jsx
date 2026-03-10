@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Upload, MessageSquare, X } from 'lucide-react';
+import { Upload, MessageSquare, X, Eye } from 'lucide-react';
 
 const Draft = () => {
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
   const [formData, setFormData] = useState({
     // Project Info
     projectRefNo: '',
@@ -21,15 +22,19 @@ const Draft = () => {
     storyHeight: '',
     cavityDepthMin: '',
     cavityDepthMax: '',
+    cavityOrInsulation: 'cavity',
+    insulationThicknessMode: false,
     topHat: 'no',
     topHatDepth: '',
     insulationThickness: '',
+    insulationThickness2: '',
     
     // Wind Load
     windLoadTypical: '',
     windLoadCorner: '',
     windLoadFunneling: '',
     applySafetyFactor: 'no',
+    windLoadByAddress: false,
     windLoadSiteAddress: '',
     windLoadPostcode: '',
     
@@ -37,12 +42,15 @@ const Draft = () => {
     claddingType: '',
     claddingBrand: '',
     claddingThickness: '',
+    claddingDensity: '',
+    materialDensity: false,
     panelDimensionB: '',
     panelDimensionH: '',
     claddingWeight: '',
     
     // QV Systems
     qvSystem: '',
+    qvVariant: '',
     
     // Vertical Profile
     verticalProfileType: '',
@@ -50,6 +58,14 @@ const Draft = () => {
     verticalProfileLengthMax: '',
     verticalProfileLength2: '',
     verticalProfileLength3: '',
+    tProfileSize: '',
+    tProfileLength1: '',
+    tProfileLength2: '',
+    tProfileLength3: '',
+    lProfileSize: '',
+    lProfileLength1: '',
+    lProfileLength2: '',
+    lProfileLength3: '',
     horizontalSpacing: '600',
     deflectionRatio: '200',
     cantileverDeflRatio: '150',
@@ -78,7 +94,9 @@ const Draft = () => {
   const claddingTypes = [
     'AGROB BUCHTAL KeraTwin K20',
     'Terracotta',
-    'Aluminum',
+    'Ceramic',
+    'Metal panels',
+    'Extruded metal panels',
     'Fiber cement',
     'Fiber concrete',
     'HPL',
@@ -87,15 +105,56 @@ const Draft = () => {
     'Brick slip'
   ];
 
-  const qvSystems = [
-    { id: 'QV1.1', description: 'Exposed Mechanical Fastening', displayLabelId: 'QV1', displayLabelDesc: 'Visible Fixing' },
-    { id: 'QV2', description: 'Concealed Adhesive' },
-    { id: 'QV3', description: 'KeraTwin K20 Panels' },
-    { id: 'QV6', description: 'Concealed Undercut' },
-    { id: 'QV7', description: 'Terracotta Panels' },
-    { id: 'QV9', description: 'Metal panels' },
-    { id: 'Q-CLOUD', description: 'Concealed Adhesive' }
+  // QV Systems (parent) with their variants (sub-systems)
+  const qvSystemsWithVariants = [
+    { id: 'QV1', description: 'Exposed Mechanical Fastening', variants: [
+      { id: 'QV1.1', description: 'Exposed Mechanical Fastening', embedUrl: 'https://sketchfab.com/models/5fc61e27e8c540d7b9a99c01fccc08dc/embed' },
+      { id: 'QV1.2', description: 'Exposed Mechanical Fastening for Stud Wall', embedUrl: 'https://sketchfab.com/models/5d2c6cb61b634346a90f410e724da93b/embed' }
+    ]},
+    { id: 'QV2', description: 'Concealed Adhesive Fastening', variants: [], embedUrl: 'https://sketchfab.com/models/52660666d1db4d7abd60081e08ab5314/embed' },
+    { id: 'QV3', description: 'KeraTwin K20 Panels', variants: [
+      { id: 'QV3.1', description: 'Horizontal KeraTwin K20 Panels with T Rails', embedUrl: 'https://sketchfab.com/models/f821f622761249c1ad5b3b35869cbb92/embed' },
+      { id: 'QV3.2', description: 'Horizontal KeraTwin K20 Panels with Omega Rails for Stud Wall', embedUrl: 'https://sketchfab.com/models/8cfae5a518654b698a77be084372c7e0/embed' },
+      { id: 'QV3.3', description: 'Vertical KeraTwin K20 Panels with Omega-S Rails', embedUrl: 'https://sketchfab.com/models/721705f3f456462faf0e6d172f9c7fb0/embed' },
+      { id: 'QV3.4', description: 'Vertical KeraTwin K20 panels with clamps' }
+    ]},
+    { id: 'QV6', description: 'Concealed Undercut Fastening', variants: [
+      { id: 'QV6.2', description: 'Concealed Undercut Fastening' },
+      { id: 'QV6.3', description: 'Concealed Undercut Fastening', embedUrl: 'https://sketchfab.com/models/6ca1e487c2c641668b04fabdf0c278cc/embed' },
+      { id: 'QV6.4', description: 'Concealed Undercut Fastening' }
+    ]},
+    { id: 'Q-CLOUD', description: 'Concealed Adhesive Glass Panels Fastening', variants: [], embedUrl: 'https://sketchfab.com/models/e5b2d10584104b5fa764b765c5977b0d/embed' },
+    { id: 'QV7', description: 'Terracotta Panels', embedUrl: 'https://sketchfab.com/models/c189665bdcd644f9a090e5782baf4532/embed', variants: [
+      { id: 'QV7.1', description: 'Horizontal Terracotta Panels with Clips and T Rails' },
+      { id: 'QV7.2', description: 'Horizontal Terracotta Panels with Clips and HAT Rails for Stud Wall' },
+      { id: 'QV7.3', description: 'Vertical Terracotta Panels with Clips and Horizontal Rails' },
+      { id: 'QV7.4', description: 'Horizontal Terracotta Panels with Clips and Horizontal Rails' },
+      { id: 'QV7.5', description: 'Vertical Terracotta Panels with Clips and Bottom-Support Rails' }
+    ]},
+    { id: 'QV9', description: 'Metal panels', variants: [
+      { id: 'QV9.3', description: 'Formed Metal Panels with Hangers', embedUrl: 'https://sketchfab.com/models/5564e7cd7405451e988b3454d3ce9cec/embed' },
+      { id: 'QV9.5', description: 'Extruded Aluminium Panels', embedUrl: 'https://sketchfab.com/models/5cd9b5719d6b40bcab2d1805cc05beb2/embed' }
+    ]}
   ];
+
+  // Cladding type → allowed QV systems (empty = all systems)
+  const claddingToQvSystems = {
+    'AGROB BUCHTAL KeraTwin K20': ['QV3'],
+    'Terracotta': ['QV7'],
+    'Metal panels': ['QV9'],
+    'Extruded metal panels': ['QV9'],
+    'Ceramic': ['QV1', 'QV2', 'QV6', 'Q-CLOUD'],
+    'HPL': ['QV1', 'QV2', 'QV6', 'Q-CLOUD']
+  };
+
+  const availableQvSystems = (() => {
+    const allowed = claddingToQvSystems[formData.claddingType];
+    if (allowed) return qvSystemsWithVariants.filter(s => allowed.includes(s.id));
+    return qvSystemsWithVariants;
+  })();
+
+  const selectedSystemData = qvSystemsWithVariants.find(s => s.id === formData.qvSystem);
+  const currentVariants = selectedSystemData?.variants || [];
 
   const verticalProfiles = {
     T: {
@@ -115,7 +174,6 @@ const Draft = () => {
     'Steel work',
     'Concrete',
     'Masonry',
-    'Top Hat / C-Channel',
     'Timber'
   ];
 
@@ -132,16 +190,43 @@ const Draft = () => {
         [name]: type === 'checkbox' ? checked : value
       };
 
-      // When Story Height is set, mirror it into Max profile length
+      // When Story Height is set, mirror it into T and L profile length 1
       if (name === 'storyHeight') {
         next.verticalProfileLengthMax = value;
+        next.tProfileLength1 = value;
+        next.lProfileLength1 = value;
       }
 
-      // Link between Cladding Type and QV System (for Agrob Buchtal)
+      // Link between Cladding Type and QV System
       if (name === 'claddingType') {
+        const allowed = claddingToQvSystems[value];
         if (value === 'AGROB BUCHTAL KeraTwin K20') {
           next.qvSystem = 'QV3';
+          next.qvVariant = '';
+        } else if (value === 'Terracotta') {
+          next.qvSystem = 'QV7';
+          next.qvVariant = '';
+        } else if (value === 'Metal panels' || value === 'Extruded metal panels') {
+          next.qvSystem = 'QV9';
+          next.qvVariant = '';
+        } else if (allowed && !allowed.includes(next.qvSystem)) {
+          // Mapped cladding (e.g. Ceramic, HPL) – clear if current selection not in allowed list
+          next.qvSystem = '';
+          next.qvVariant = '';
+        } else if (!allowed) {
+          next.qvSystem = '';
+          next.qvVariant = '';
         }
+      }
+
+      // When qvSystem changes, clear qvVariant
+      if (name === 'qvSystem') {
+        next.qvVariant = '';
+      }
+
+      // Sync cavityOrInsulation when insulationThicknessMode changes (for Building section)
+      if (name === 'insulationThicknessMode') {
+        next.cavityOrInsulation = checked ? 'insulation' : 'cavity';
       }
 
       return next;
@@ -171,12 +256,15 @@ const Draft = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+      <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-8">
         {/* Left: Main form content */}
         <div className="flex-1 min-w-0 space-y-8">
           {/* Page Header */}
           <div className="mb-8 lg:mb-0">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3 font-sans">Apple Draft</h2>
+            <div className="mb-3">
+              <h2 className="text-2xl font-semibold text-gray-900 font-sans">Project Navigator</h2>
+              <p className="text-sm text-gray-600 font-sans mt-1">System selection, early-stage bracket spacing calculations & cost estimation</p>
+            </div>
           </div>
             {/* Layer 1: Cladding */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
@@ -220,21 +308,6 @@ const Draft = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Thickness <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('claddingThickness', 'mm', '', true)}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Weight <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('claddingWeight', 'kg/sq.m', '', true)}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
                       Panel Dimension B (width) <span className="text-red-500">*</span>
                     </label>
                     {renderInputWithUnit('panelDimensionB', 'mm', '', true)}
@@ -247,107 +320,163 @@ const Draft = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Fastening Type <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="layoutOutlook"
-                          value="visible"
-                          checked={formData.layoutOutlook === 'visible'}
-                          onChange={handleInputChange}
-                          required
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span className="text-sm text-gray-700">Visible</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="layoutOutlook"
-                          value="concealed"
-                          checked={formData.layoutOutlook === 'concealed'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span className="text-sm text-gray-700">Concealed</span>
-                      </label>
+                <div className="space-y-3">
+                  <div className="flex flex-col md:flex-row md:items-end gap-4">
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Weight</label>
+                      {renderInputWithUnit('claddingWeight', 'kg/sq.m')}
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Panel Orientation
-                    </label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm text-gray-500 font-medium shrink-0 self-center md:pb-3">or</span>
+                    <div className="flex-1 min-w-0 flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
                         <input
-                          type="radio"
-                          name="panelOrientation"
-                          value="vertical"
-                          checked={formData.panelOrientation === 'vertical'}
+                          type="checkbox"
+                          name="materialDensity"
+                          checked={formData.materialDensity}
                           onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                          className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
                         />
-                        <span className="text-sm text-gray-700">Vertical</span>
+                        <span>Material Density</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="panelOrientation"
-                          value="horizontal"
-                          checked={formData.panelOrientation === 'horizontal'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span className="text-sm text-gray-700">Horizontal</span>
-                      </label>
+                      {formData.materialDensity && (
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          <div>
+                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
+                            {renderInputWithUnit('claddingThickness', 'mm')}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Density</label>
+                            {renderInputWithUnit('claddingDensity', 'kg/m³')}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {(formData.claddingType === 'AGROB BUCHTAL KeraTwin K20' || formData.claddingType === 'Terracotta') && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                        Panel Orientation
+                      </label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="panelOrientation"
+                            value="vertical"
+                            checked={formData.panelOrientation === 'vertical'}
+                            onChange={handleInputChange}
+                            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                          />
+                          <span className="text-sm text-gray-700">Vertical</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="panelOrientation"
+                            value="horizontal"
+                            checked={formData.panelOrientation === 'horizontal'}
+                            onChange={handleInputChange}
+                            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                          />
+                          <span className="text-sm text-gray-700">Horizontal</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 </div>
               </div>
 
             {/* Your Configuration – mobile only (desktop: in right sidebar) */}
             <div className="lg:hidden bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5">
               <h3 className="text-lg font-medium text-gray-900 font-sans mb-4">Your Configuration</h3>
+              {/* Systems (top) */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {qvSystems.map((system) => {
-                  const isAgrobCladding = formData.claddingType === 'AGROB BUCHTAL KeraTwin K20';
-                  const isEnabled = !isAgrobCladding || system.id === 'QV3';
+                {availableQvSystems.map((system) => {
                   const isActive = formData.qvSystem === system.id;
                   return (
                     <label
                       key={system.id}
                       className={`flex flex-col items-center justify-center gap-1 p-4 rounded-lg border-2 transition-all duration-200 text-center ${
-                        !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
-                          : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
-                          : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
+                        isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
                       }`}
                     >
-                      <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
-                      <span className="text-sm font-medium">{system.displayLabelId || system.id}</span>
-                      <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.displayLabelDesc || system.description}</span>
+                      <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} className="sr-only" />
+                      <span className="text-sm font-medium">{system.id}</span>
+                      <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
                     </label>
                   );
                 })}
               </div>
-              {formData.qvSystem && (
+              {/* Variants (below) */}
+              {formData.qvSystem && currentVariants.length > 0 && (
                 <div className="mt-4 border-t border-red-200 pt-4">
-                  <h4 className="text-sm font-medium text-gray-800 mb-2 font-sans">Components</h4>
-                  {formData.qvSystem === 'QV3' ? (
-                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 font-sans">
-                      <li><span className="font-medium">System rails</span> <span className="text-gray-500">(profiles 695, 690, 698)</span></li>
-                      <li><span className="font-medium">Wall brackets</span></li>
-                      <li><span className="font-medium">Accessories</span></li>
-                      <li><span className="font-medium">Fasteners</span></li>
-                    </ul>
-                  ) : (
-                    <p className="text-xs text-gray-500 font-sans">Configuration details will be added later.</p>
-                  )}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <h4 className="text-sm font-medium text-gray-800 font-sans">Variants</h4>
+                    {selectedSystemData?.embedUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewItem(selectedSystemData)}
+                        className="shrink-0 p-1.5 rounded-md hover:bg-gray-100 text-gray-600 flex items-center gap-1"
+                        title="Preview 3D"
+                        aria-label="Preview 3D"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span className="text-xs">Preview</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {currentVariants.map((variant) => {
+                      const isVariantActive = formData.qvVariant === variant.id;
+                      return (
+                        <label
+                          key={variant.id}
+                          className={`flex items-start justify-between gap-2 p-2.5 rounded-lg border-2 transition-all duration-200 w-full cursor-pointer ${
+                            isVariantActive ? 'bg-red-600 border-red-600 text-white' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <input type="radio" name="qvVariant" value={variant.id} checked={formData.qvVariant === variant.id} onChange={handleInputChange} className="sr-only" />
+                            <span className="text-sm font-medium block">{variant.id}</span>
+                            <span className={`text-xs font-normal ${isVariantActive ? 'text-white/90' : 'text-gray-600'}`}>{variant.description}</span>
+                          </div>
+                          {variant.embedUrl && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviewItem(variant); }}
+                              className={`shrink-0 p-1.5 rounded-md transition-colors ${isVariantActive ? 'hover:bg-red-500 text-white' : 'hover:bg-gray-100 text-gray-600'}`}
+                              title="Preview 3D"
+                              aria-label="Preview 3D"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {formData.qvSystem && currentVariants.length === 0 && selectedSystemData && (
+                <div className="mt-4 border-t border-red-200 pt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-gray-600 font-sans">{selectedSystemData.id} – {selectedSystemData.description}</p>
+                    {selectedSystemData.embedUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewItem(selectedSystemData)}
+                        className="shrink-0 p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
+                        title="Preview 3D"
+                        aria-label="Preview 3D"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
               <div className="mt-4 pt-4 border-t border-red-200 space-y-3">
@@ -381,68 +510,143 @@ const Draft = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Building Height
+                      Building Height <span className="text-red-500">*</span>
                     </label>
-                    {renderInputWithUnit('buildingHeight', 'm')}
+                    {renderInputWithUnit('buildingHeight', 'm', '', true)}
                   </div>
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Story Height
+                      Story Height <span className="text-red-500">*</span>
                     </label>
-                    {renderInputWithUnit('storyHeight', 'm')}
+                    {renderInputWithUnit('storyHeight', 'm', '', true)}
                   </div>
                 </div>
 
-                {/* Cavity Depth 1, Cavity Depth 2, Insulation Thickness – one row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 1</label>
-                    {renderInputWithUnit('cavityDepthMin', 'mm')}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 2</label>
-                    {renderInputWithUnit('cavityDepthMax', 'mm')}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness</label>
-                    {renderInputWithUnit('insulationThickness', 'mm')}
+                {/* Cavity Depth OR Insulation Thickness – same pattern as Cladding Weight/Material Density */}
+                <div className="space-y-3">
+                  <div className="flex flex-col md:flex-row md:items-end gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 1</label>
+                          {renderInputWithUnit('cavityDepthMin', 'mm')}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 2</label>
+                          {renderInputWithUnit('cavityDepthMax', 'mm')}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-sm text-gray-500 font-medium shrink-0 self-center md:pb-3">or</span>
+                    <div className="flex-1 min-w-0 flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="checkbox"
+                          name="insulationThicknessMode"
+                          checked={formData.insulationThicknessMode}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                        />
+                        <span>Insulation Thickness</span>
+                      </label>
+                      {formData.insulationThicknessMode && (
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          <div>
+                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness 1</label>
+                            {renderInputWithUnit('insulationThickness', 'mm')}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness 2</label>
+                            {renderInputWithUnit('insulationThickness2', 'mm')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Substrate Type + Substrate Type Specifics – one row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Substrate Type <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="substrateType"
-                      value={formData.substrateType}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                    >
-                      <option value="">Select substrate type</option>
-                      {substrateTypes.map((type, index) => (
-                        <option key={index} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
+                {/* Substrate Type */}
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                    Substrate Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="substrateType"
+                    value={formData.substrateType}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                  >
+                    <option value="">Select substrate type</option>
+                    {substrateTypes.map((type, index) => (
+                      <option key={index} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Top Hat / C-Channel – below Substrate Type */}
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Top Hat / C-Channel <span className="text-red-500">*</span></label>
+                  <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="topHat"
+                          value="yes"
+                          checked={formData.topHat === 'yes'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>Yes</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="topHat"
+                          value="no"
+                          checked={formData.topHat === 'no'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>No</span>
+                      </label>
+                    </div>
+                </div>
+                {formData.topHat === 'yes' && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
+                      <select name="topHatChannelThickness" value={formData.topHatChannelThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                        <option value="">Select thickness</option>
+                        {topHatThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
+                      <input type="text" name="topHatChannelMaterial" value={formData.topHatChannelMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="5754 H22" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth <span className="text-red-500">*</span></label>
+                      {renderInputWithUnit('topHatDepth', 'mm', '', true)}
+                    </div>
                   </div>
-                  <div className="space-y-4">
+                )}
+                {(formData.substrateType === 'Stud' || formData.substrateType === 'Steel work' || formData.substrateType === 'Concrete') && (
+                <div className="mt-4">
                   {formData.substrateType === 'Stud' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
-                          <select name="studThickness" value={formData.studThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
+                          <select name="studThickness" value={formData.studThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
                             <option value="">Select thickness</option>
                             {studThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
-                          <select name="studMaterial" value={formData.studMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
+                          <select name="studMaterial" value={formData.studMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
                             <option value="">Select material</option>
                             {studMaterialOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                           </select>
@@ -452,12 +656,12 @@ const Draft = () => {
                   {formData.substrateType === 'Steel work' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
-                          <input type="text" name="steelWorkThickness" value={formData.steelWorkThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="3 mm" />
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
+                          <input type="text" name="steelWorkThickness" value={formData.steelWorkThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="3 mm" />
                         </div>
                         <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
-                          <select name="steelWorkMaterial" value={formData.steelWorkMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
+                          <select name="steelWorkMaterial" value={formData.steelWorkMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
                             <option value="">Select material</option>
                             {steelWorkMaterialOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                           </select>
@@ -466,31 +670,12 @@ const Draft = () => {
                   )}
                   {formData.substrateType === 'Concrete' && (
                     <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Concrete Grade</label>
-                        <input type="text" name="concreteGrade" value={formData.concreteGrade} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="C20/25 (default)" />
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Concrete Grade <span className="text-red-500">*</span></label>
+                        <input type="text" name="concreteGrade" value={formData.concreteGrade} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="C20/25 (default)" />
                     </div>
                   )}
-                  {formData.substrateType === 'Top Hat / C-Channel' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
-                        <select name="topHatChannelThickness" value={formData.topHatChannelThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
-                          <option value="">Select thickness</option>
-                          {topHatThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
-                        <input type="text" name="topHatChannelMaterial" value={formData.topHatChannelMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="5754 H22" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth</label>
-                        {renderInputWithUnit('topHatDepth', 'mm')}
-                      </div>
-                    </div>
-                  )}
-                  </div>
                 </div>
+                )}
               </div>
             </div>
 
@@ -501,7 +686,7 @@ const Draft = () => {
                   Wind load
                 </h3>
                 <div className="space-y-4">
-                  {/* Typical, Corner, Funneling – one row */}
+                  {/* Wind load values OR Get by site address */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Typical (center) zone</label>
@@ -516,42 +701,20 @@ const Draft = () => {
                       {renderInputWithUnit('windLoadFunneling', 'kN/sq.m')}
                     </div>
                   </div>
-                  {/* Apply Safety Factor – below, Yes / No */}
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Apply Safety Factor</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="radio"
-                          name="applySafetyFactor"
-                          value="yes"
-                          checked={formData.applySafetyFactor === 'yes'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span>Yes</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="radio"
-                          name="applySafetyFactor"
-                          value="no"
-                          checked={formData.applySafetyFactor === 'no'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span>No</span>
-                      </label>
-                    </div>
-                  </div>
-                  {/* Get Wind Load by site location */}
-                  <div className="pt-4 border-t border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-2 font-sans">
-                      Don't know the values?
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-gray-500 font-medium">or</span>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                      <input
+                        type="checkbox"
+                        name="windLoadByAddress"
+                        checked={formData.windLoadByAddress}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                      />
+                      <span>Get by site address</span>
                     </label>
-                    <p className="text-xs text-gray-500 font-sans mb-3">
-                      Enter the site address and postcode below.
-                    </p>
+                  </div>
+                  {formData.windLoadByAddress && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Site Address</label>
@@ -576,88 +739,96 @@ const Draft = () => {
                         />
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Primary substructure */}
+            {/* Vertical profiles */}
             <div className="mt-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  Primary substructure
+                  Vertical profiles
                 </h3>
-                <div className="space-y-4">
-                {/* Select Type + Cross-section - row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                  {/* Select Type - compact */}
-                  <div className="min-w-0">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, verticalProfileType: 'T', verticalProfileSize: '' }))}
-                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                          formData.verticalProfileType === 'T' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg viewBox="0 0 60 80" className="w-10 h-12 mb-1">
-                            <rect x="10" y="0" width="40" height="8" fill={formData.verticalProfileType === 'T' ? '#374151' : '#9CA3AF'} />
-                            <rect x="24" y="8" width="12" height="72" fill={formData.verticalProfileType === 'T' ? '#374151' : '#9CA3AF'} />
-                          </svg>
-                          <span className={`text-xs font-medium ${formData.verticalProfileType === 'T' ? 'text-gray-900' : 'text-gray-600'}`}>T-Profile</span>
-                        </div>
-                      </div>
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, verticalProfileType: 'L', verticalProfileSize: '' }))}
-                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                          formData.verticalProfileType === 'L' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg viewBox="0 0 60 80" className="w-10 h-12 mb-1">
-                            <rect x="10" y="0" width="12" height="80" fill={formData.verticalProfileType === 'L' ? '#374151' : '#9CA3AF'} />
-                            <rect x="10" y="68" width="40" height="12" fill={formData.verticalProfileType === 'L' ? '#374151' : '#9CA3AF'} />
-                          </svg>
-                          <span className={`text-xs font-medium ${formData.verticalProfileType === 'L' ? 'text-gray-900' : 'text-gray-600'}`}>L-Profile</span>
-                        </div>
-                      </div>
-                    </div>
+                <div className="space-y-6">
+                {/* T-Profile */}
+                <div className="flex flex-col md:flex-row md:items-start gap-4">
+                  <div className="shrink-0">
+                    <svg viewBox="0 0 60 80" className="w-8 h-10 flex-shrink-0">
+                      <rect x="10" y="0" width="40" height="8" fill="#374151" />
+                      <rect x="24" y="8" width="12" height="72" fill="#374151" />
+                    </svg>
                   </div>
-                  {/* Cross-section Size */}
-                  {formData.verticalProfileType && (
-                    <div className="min-w-[12rem]">
+                  <div className="flex-1 space-y-4">
+                    <div>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                        {verticalProfiles[formData.verticalProfileType].sizes.map((size) => (
+                        {verticalProfiles.T.sizes.map((size) => (
                           <label
                             key={size}
                             className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
-                              formData.verticalProfileSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                              formData.tProfileSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
                             }`}
                           >
-                            <input type="radio" name="verticalProfileSize" value={size} checked={formData.verticalProfileSize === size} onChange={handleInputChange} className="sr-only" />
+                            <input type="radio" name="tProfileSize" value={size} checked={formData.tProfileSize === size} onChange={handleInputChange} className="sr-only" />
                             <span>{size}</span>
                           </label>
                         ))}
                       </div>
                     </div>
-                  )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L1</label>
+                        {renderInputWithUnit('tProfileLength1', 'mm')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L2</label>
+                        {renderInputWithUnit('tProfileLength2', 'mm')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L3</label>
+                        {renderInputWithUnit('tProfileLength3', 'mm')}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                {/* Specify Length - row 2, below Select Type and Cross-section */}
-                <div>
-                  <div className="h-4" />
-                  <div className="grid grid-cols-3 gap-2">
+
+                {/* L-Profile */}
+                <div className="flex flex-col md:flex-row md:items-start gap-4">
+                  <div className="shrink-0">
+                    <svg viewBox="0 0 60 80" className="w-8 h-10 flex-shrink-0">
+                      <rect x="10" y="0" width="12" height="80" fill="#374151" />
+                      <rect x="10" y="68" width="40" height="12" fill="#374151" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 space-y-4">
                     <div>
-                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L1 (StoryHeight)</label>
-                      {renderInputWithUnit('verticalProfileLengthMax', 'mm')}
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                        {verticalProfiles.L.sizes.map((size) => (
+                          <label
+                            key={size}
+                            className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
+                              formData.lProfileSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            <input type="radio" name="lProfileSize" value={size} checked={formData.lProfileSize === size} onChange={handleInputChange} className="sr-only" />
+                            <span>{size}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L2</label>
-                      {renderInputWithUnit('verticalProfileLength2', 'mm')}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L3</label>
-                      {renderInputWithUnit('verticalProfileLength3', 'mm')}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L1</label>
+                        {renderInputWithUnit('lProfileLength1', 'mm')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L2</label>
+                        {renderInputWithUnit('lProfileLength2', 'mm')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L3</label>
+                        {renderInputWithUnit('lProfileLength3', 'mm')}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -700,65 +871,68 @@ const Draft = () => {
                   </div>
                 </div>
               </div>
+            </div>
+            </div>
 
-                {/* Wall Bracket – same layout as Select Type + Cross-section */}
-                <div className="pt-4">
-                  <div className="h-5" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                    <div className="min-w-0">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div
-                          onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QVB', wallBracketSize: '' }))}
-                          className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                            formData.wallBracket === 'QVB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex flex-col items-center">
-                            <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
-                              <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
-                              <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
-                              <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QVB' ? '#6B7280' : '#D1D5DB'} />
-                            </svg>
-                            <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QVB' ? 'text-gray-900' : 'text-gray-600'}`}>Aluminum<br />Wall Brackets</span>
-                          </div>
+            {/* Wall brackets */}
+            <div className="mt-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
+                  Wall brackets
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                  <div className="min-w-0">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div
+                        onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QVB', wallBracketSize: '' }))}
+                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                          formData.wallBracket === 'QVB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center">
+                          <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
+                            <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                            <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                            <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QVB' ? '#6B7280' : '#D1D5DB'} />
+                          </svg>
+                          <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QVB' ? 'text-gray-900' : 'text-gray-600'}`}>QVB aluminum</span>
                         </div>
-                        <div
-                          onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QTB', wallBracketSize: '' }))}
-                          className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                            formData.wallBracket === 'QTB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex flex-col items-center">
-                            <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
-                              <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
-                              <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
-                              <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QTB' ? '#6B7280' : '#D1D5DB'} />
-                              <circle cx="48" cy="41" r="3" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
-                            </svg>
-                            <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QTB' ? 'text-gray-900' : 'text-gray-600'}`}>Stainless Steel<br />Wall bracket</span>
-                          </div>
+                      </div>
+                      <div
+                        onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QTB', wallBracketSize: '' }))}
+                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                          formData.wallBracket === 'QTB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center">
+                          <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
+                            <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                            <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                            <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QTB' ? '#6B7280' : '#D1D5DB'} />
+                            <circle cx="48" cy="41" r="3" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                          </svg>
+                          <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QTB' ? 'text-gray-900' : 'text-gray-600'}`}>QTB stainless steel</span>
                         </div>
                       </div>
                     </div>
-                    {formData.wallBracket && (
-                      <div className="min-w-[12rem]">
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                          {wallBracketSizes.map((size) => (
-                            <label
-                              key={size}
-                              className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
-                                formData.wallBracketSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
-                              }`}
-                            >
-                              <input type="radio" name="wallBracketSize" value={size} checked={formData.wallBracketSize === size} onChange={handleInputChange} className="sr-only" />
-                              <span>{size}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                </div>
+                  {formData.wallBracket && (
+                    <div className="min-w-[12rem]">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                        {wallBracketSizes.map((size) => (
+                          <label
+                            key={size}
+                            className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
+                              formData.wallBracketSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            <input type="radio" name="wallBracketSize" value={size} checked={formData.wallBracketSize === size} onChange={handleInputChange} className="sr-only" />
+                            <span>{size}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -914,47 +1088,99 @@ const Draft = () => {
               </div>
 
         </div>
+        </div>
 
         {/* Right: Your Configuration – sidebar parallel to form */}
-        <div className="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:flex-col">
+        <div className="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:flex-col lg:self-start">
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5 sticky top-8 flex flex-col">
             <h3 className="text-lg font-medium text-gray-900 font-sans mb-4">Your Configuration</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {qvSystems.map((system) => {
-                const isAgrobCladding = formData.claddingType === 'AGROB BUCHTAL KeraTwin K20';
-                const isEnabled = !isAgrobCladding || system.id === 'QV3';
+            {/* Systems (top) */}
+            <div className="grid grid-cols-2 gap-2">
+              {availableQvSystems.map((system) => {
                 const isActive = formData.qvSystem === system.id;
                 return (
                   <label
                     key={system.id}
-                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 transition-all duration-200 text-center ${
-                      !isEnabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
-                        : isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer'
-                        : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
+                    className={`flex flex-col items-center justify-center gap-0.5 p-2.5 rounded-lg border-2 transition-all duration-200 text-center ${
+                      isActive ? 'bg-red-600 border-red-600 text-white cursor-pointer' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 cursor-pointer'
                     }`}
                   >
-                    <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} disabled={!isEnabled} className="sr-only" />
-                    <span className="text-sm font-medium">{system.displayLabelId || system.id}</span>
-                    <span className={`text-xs font-normal ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.displayLabelDesc || system.description}</span>
+                    <input type="radio" name="qvSystem" value={system.id} checked={formData.qvSystem === system.id} onChange={handleInputChange} className="sr-only" />
+                    <span className="text-sm font-medium">{system.id}</span>
+                    <span className={`text-xs font-normal truncate w-full px-1 ${isActive ? 'text-white/90' : 'text-gray-600'}`}>{system.description}</span>
                   </label>
                 );
               })}
             </div>
-            {formData.qvSystem && (
+            {/* Variants (below, when system has variants) */}
+            {formData.qvSystem && currentVariants.length > 0 && (
               <div className="mt-4 border-t border-red-200 pt-4">
-                <h4 className="text-sm font-medium text-gray-800 mb-2 font-sans">Components</h4>
-                {formData.qvSystem === 'QV3' ? (
-                  <ul className="list-disc list-inside space-y-1 text-xs text-gray-700 font-sans">
-                    <li>System rails (profiles 695, 690, 698)</li>
-                    <li>Wall brackets</li>
-                    <li>Accessories</li>
-                    <li>Fasteners</li>
-                  </ul>
-                ) : (
-                  <p className="text-xs text-gray-500 font-sans">Configuration details will be added later.</p>
-                )}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h4 className="text-sm font-medium text-gray-800 font-sans">Variants</h4>
+                  {selectedSystemData?.embedUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewItem(selectedSystemData)}
+                      className="shrink-0 p-1.5 rounded-md hover:bg-gray-100 text-gray-600 flex items-center gap-1"
+                      title="Preview 3D"
+                      aria-label="Preview 3D"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span className="text-xs">Preview</span>
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {currentVariants.map((variant) => {
+                    const isVariantActive = formData.qvVariant === variant.id;
+                    return (
+                      <label
+                        key={variant.id}
+                        className={`flex items-start justify-between gap-2 p-2.5 rounded-lg border-2 transition-all duration-200 w-full cursor-pointer ${
+                          isVariantActive ? 'bg-red-600 border-red-600 text-white' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <input type="radio" name="qvVariant" value={variant.id} checked={formData.qvVariant === variant.id} onChange={handleInputChange} className="sr-only" />
+                          <span className="text-sm font-medium block">{variant.id}</span>
+                          <span className={`text-xs font-normal ${isVariantActive ? 'text-white/90' : 'text-gray-600'}`}>{variant.description}</span>
+                        </div>
+                        {variant.embedUrl && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviewItem(variant); }}
+                            className={`shrink-0 p-1.5 rounded-md transition-colors ${isVariantActive ? 'hover:bg-red-500 text-white' : 'hover:bg-gray-100 text-gray-600'}`}
+                            title="Preview 3D"
+                            aria-label="Preview 3D"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             )}
+            {/* Systems without variants: selection is complete when system is selected */}
+              {formData.qvSystem && currentVariants.length === 0 && selectedSystemData && (
+                <div className="mt-4 border-t border-red-200 pt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-gray-600 font-sans">{selectedSystemData.id} – {selectedSystemData.description}</p>
+                    {selectedSystemData.embedUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewItem(selectedSystemData)}
+                        className="shrink-0 p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
+                        title="Preview 3D"
+                        aria-label="Preview 3D"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             <div className="mt-4 pt-4 border-t border-red-200 space-y-3">
               <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
                 <input
@@ -1014,6 +1240,34 @@ const Draft = () => {
                 <MessageSquare className="w-6 h-6" />
               </button>
             </div>
+
+            {/* 3D Preview Modal */}
+            {previewItem && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60" onClick={() => setPreviewItem(null)}>
+                <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900 font-sans">{previewItem.id} – {previewItem.description}</h3>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewItem(null)}
+                      className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                      aria-label="Close"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 min-h-0 p-4">
+                    <iframe
+                      title={previewItem.id}
+                      src={previewItem.embedUrl}
+                      className="w-full aspect-video rounded-lg"
+                      allowFullScreen
+                      allow="autoplay; fullscreen; xr-spatial-tracking"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
       </form>
     </div>
   );

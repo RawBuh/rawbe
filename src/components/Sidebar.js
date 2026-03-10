@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlusCircle, Home, Settings, Table, DollarSign, Shield, ClipboardCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, Home, Settings, Table, DollarSign, Shield, ClipboardCheck, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -10,13 +10,13 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
   const navigationItems = [
     { id: 'new-chat', label: 'New Chat', icon: PlusCircle, type: 'action' },
     { id: 'my-projects', label: 'My Projects', icon: Home, type: 'link' },
-    { id: 'get-project-quote', label: 'Get Quote', icon: ClipboardCheck, type: 'link' },
-    { id: 'get-quote-2', label: 'Apple Calculator', icon: ClipboardCheck, type: 'link' },
-    { id: 'draft', label: 'Apple Draft', icon: ClipboardCheck, type: 'link' },
-    { id: 'quote', label: 'Quote', icon: ClipboardCheck, type: 'link' },
+    { id: 'draft', label: 'Project Navigator', icon: ClipboardCheck, type: 'link' },
+    { id: 'quote', label: 'Quote Report', icon: Download, type: 'link' },
   ];
 
   const qventItems = [
+    { id: 'get-project-quote', label: 'Get Quote', icon: ClipboardCheck },
+    { id: 'get-quote-2', label: 'Apple Calculator', icon: ClipboardCheck },
     { id: 'systems', label: 'Attachment Systems', icon: Settings },
     { id: 'my-prices-dealers', label: 'My Prices (QV distr)', icon: DollarSign },
     { id: 'our-prices-sales', label: 'Our Prices (QV team)', icon: DollarSign },
@@ -90,11 +90,11 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
 
         {/* Collapsed Brand Modules */}
         <div className="space-y-8 flex flex-col items-center">
-          {/* Q-VENT Collapsed */}
+          {/* Draft Collapsed */}
           <button
             onClick={() => handleNavClick('systems')}
             className="flex flex-col items-center hover:bg-gray-100 p-2 rounded-lg transition-all duration-200"
-            title="Access Q-VENT systems"
+            title="Draft"
           >
             <div className="w-5 h-5 relative group mb-2">
               <div className="w-5 h-5 border-2 border-gray-400 rounded-full"></div>
@@ -104,7 +104,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
                      borderRadius: '50%'
                    }}></div>
             </div>
-            <span className="text-xs text-gray-600 font-medium text-center">Q-VENT</span>
+            <span className="text-xs text-gray-600 font-medium text-center">Draft</span>
           </button>
 
           {/* AGROB BUCHTAL Collapsed - hidden for now */}
@@ -173,7 +173,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
 
       {/* AI Agent Modules */}
       <div className="space-y-4">
-        {/* Q-VENT AI Module */}
+        {/* Draft */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="mb-4">
             <div className="flex items-center gap-3">
@@ -186,7 +186,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
                      }}></div>
               </div>
               <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide font-sans">
-                Q-VENT
+                Draft
               </h3>
             </div>
           </div>
@@ -195,7 +195,7 @@ const Sidebar = ({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen 
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                title={`${item.label} - Access Q-VENT module functionality`}
+                title={item.label}
                 className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-md transition-all duration-200 text-sm font-normal font-sans ${
                   activeSection === item.id
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'

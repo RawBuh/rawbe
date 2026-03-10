@@ -56,7 +56,6 @@ const Quote = () => {
     { label: 'Wind load (typical)', value: quoteData?.windLoadTypical ? `${quoteData.windLoadTypical} kN/m²` : '–' },
     { label: 'Wind load (corner)', value: quoteData?.windLoadCorner ? `${quoteData.windLoadCorner} kN/m²` : '–' },
     { label: 'Wind load (funneling)', value: quoteData?.windLoadFunneling ? `${quoteData.windLoadFunneling} kN/m²` : '–' },
-    { label: 'Apply safety factor', value: quoteData?.applySafetyFactor === 'yes' ? 'Yes' : quoteData?.applySafetyFactor === 'no' ? 'No' : '–' },
   ];
 
   const handlePrint = () => window.print();

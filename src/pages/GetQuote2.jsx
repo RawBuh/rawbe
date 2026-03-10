@@ -23,6 +23,7 @@ const GetQuote2 = ({ setActiveSection }) => {
     storyHeight: '',
     cavityDepthMin: '',
     cavityDepthMax: '',
+    cavityOrInsulation: 'cavity',
     topHat: 'no',
     topHatDepth: '',
     insulationThickness: '',
@@ -37,6 +38,8 @@ const GetQuote2 = ({ setActiveSection }) => {
     claddingType: '',
     claddingBrand: '',
     claddingThickness: '',
+    claddingDensity: '',
+    materialDensity: false,
     panelDimensionB: '',
     panelDimensionH: '',
     claddingWeight: '',
@@ -50,6 +53,14 @@ const GetQuote2 = ({ setActiveSection }) => {
     verticalProfileLengthMax: '',
     verticalProfileLength2: '',
     verticalProfileLength3: '',
+    tProfileSize: '',
+    tProfileLength1: '',
+    tProfileLength2: '',
+    tProfileLength3: '',
+    lProfileSize: '',
+    lProfileLength1: '',
+    lProfileLength2: '',
+    lProfileLength3: '',
     horizontalSpacing: '600',
     deflectionRatio: '200',
     cantileverDeflRatio: '150',
@@ -114,7 +125,6 @@ const GetQuote2 = ({ setActiveSection }) => {
     'Steel work',
     'Concrete',
     'Masonry',
-    'Top Hat / C-Channel',
     'Timber'
   ];
 
@@ -131,9 +141,11 @@ const GetQuote2 = ({ setActiveSection }) => {
         [name]: type === 'checkbox' ? checked : value
       };
 
-      // When Story Height is set, mirror it into Max profile length
+      // When Story Height is set, mirror it into T and L profile length 1
       if (name === 'storyHeight') {
         next.verticalProfileLengthMax = value;
+        next.tProfileLength1 = value;
+        next.lProfileLength1 = value;
       }
 
       // Link between Cladding Type and QV System (for Agrob Buchtal)
@@ -290,23 +302,55 @@ const GetQuote2 = ({ setActiveSection }) => {
                   </div>
                 </div>
 
-                {/* Cavity Depth 1, Cavity Depth 2, Insulation Thickness – one row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 1</label>
-                    {renderInputWithUnit('cavityDepthMin', 'mm')}
+                {/* Cavity Depth OR Insulation Thickness */}
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600 font-sans">
+                    Fill <span className="font-medium text-gray-700">Cavity Depth 1 & 2</span> <span className="text-gray-500">or</span> <span className="font-medium text-gray-700">Insulation Thickness</span>
+                  </p>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                      <input
+                        type="radio"
+                        name="cavityOrInsulation"
+                        value="cavity"
+                        checked={formData.cavityOrInsulation === 'cavity'}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                      />
+                      <span>Cavity Depth</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                      <input
+                        type="radio"
+                        name="cavityOrInsulation"
+                        value="insulation"
+                        checked={formData.cavityOrInsulation === 'insulation'}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                      />
+                      <span>Insulation Thickness</span>
+                    </label>
                   </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 2</label>
-                    {renderInputWithUnit('cavityDepthMax', 'mm')}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness</label>
-                    {renderInputWithUnit('insulationThickness', 'mm')}
-                  </div>
+                  {formData.cavityOrInsulation === 'cavity' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 1</label>
+                        {renderInputWithUnit('cavityDepthMin', 'mm')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 2</label>
+                        {renderInputWithUnit('cavityDepthMax', 'mm')}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness</label>
+                      {renderInputWithUnit('insulationThickness', 'mm')}
+                    </div>
+                  )}
                 </div>
 
-                {/* Substrate Type + Substrate Type Specifics – one row */}
+                {/* Substrate Type + Top Hat / C-Channel */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                   <div>
                     <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
@@ -327,7 +371,55 @@ const GetQuote2 = ({ setActiveSection }) => {
                       ))}
                     </select>
                   </div>
-                  <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Top Hat / C-Channel</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="topHat"
+                          value="yes"
+                          checked={formData.topHat === 'yes'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>Yes</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="topHat"
+                          value="no"
+                          checked={formData.topHat === 'no'}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>No</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                {formData.topHat === 'yes' && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
+                      <select name="topHatChannelThickness" value={formData.topHatChannelThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                        <option value="">Select thickness</option>
+                        {topHatThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
+                      <input type="text" name="topHatChannelMaterial" value={formData.topHatChannelMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="5754 H22" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth</label>
+                      {renderInputWithUnit('topHatDepth', 'mm')}
+                    </div>
+                  </div>
+                )}
+                {(formData.substrateType === 'Stud' || formData.substrateType === 'Steel work' || formData.substrateType === 'Concrete') && (
+                <div className="mt-4">
                   {formData.substrateType === 'Stud' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -367,27 +459,8 @@ const GetQuote2 = ({ setActiveSection }) => {
                         <input type="text" name="concreteGrade" value={formData.concreteGrade} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="C20/25 (default)" />
                     </div>
                   )}
-                  {formData.substrateType === 'Top Hat / C-Channel' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
-                        <select name="topHatChannelThickness" value={formData.topHatChannelThickness} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
-                          <option value="">Select thickness</option>
-                          {topHatThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material</label>
-                        <input type="text" name="topHatChannelMaterial" value={formData.topHatChannelMaterial} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="5754 H22" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth</label>
-                        {renderInputWithUnit('topHatDepth', 'mm')}
-                      </div>
-                    </div>
-                  )}
-                  </div>
                 </div>
+                )}
               </div>
             </div>
 
@@ -411,34 +484,6 @@ const GetQuote2 = ({ setActiveSection }) => {
                     <div>
                       <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Funneling zone</label>
                       {renderInputWithUnit('windLoadFunneling', 'kN/sq.m')}
-                    </div>
-                  </div>
-                  {/* Apply Safety Factor – below, Yes / No */}
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Apply Safety Factor</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="radio"
-                          name="applySafetyFactor"
-                          value="yes"
-                          checked={formData.applySafetyFactor === 'yes'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span>Yes</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="radio"
-                          name="applySafetyFactor"
-                          value="no"
-                          checked={formData.applySafetyFactor === 'no'}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                        />
-                        <span>No</span>
-                      </label>
                     </div>
                   </div>
                 </div>
@@ -485,18 +530,39 @@ const GetQuote2 = ({ setActiveSection }) => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Thickness <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('claddingThickness', 'mm', '', true)}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Weight <span className="text-red-500">*</span>
-                    </label>
-                    {renderInputWithUnit('claddingWeight', 'kg/sq.m', '', true)}
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600 font-sans">
+                    Fill <span className="font-medium text-gray-700">Weight</span> <span className="text-gray-500">or</span> <span className="font-medium text-gray-700">Material Density</span> (Thickness + Density)
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Weight</label>
+                      {renderInputWithUnit('claddingWeight', 'kg/sq.m')}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="checkbox"
+                          name="materialDensity"
+                          checked={formData.materialDensity}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                        />
+                        <span>Material Density</span>
+                      </label>
+                      {formData.materialDensity && (
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          <div>
+                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
+                            {renderInputWithUnit('claddingThickness', 'mm')}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Density</label>
+                            {renderInputWithUnit('claddingDensity', 'kg/m³')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -563,83 +629,95 @@ const GetQuote2 = ({ setActiveSection }) => {
               </div>
             </div>
 
-            {/* Primary substructure */}
+            {/* Vertical profiles */}
             <div className="mt-8">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
-                  Primary substructure
+                  Vertical profiles
                 </h3>
-                <div className="space-y-4">
-                {/* Select Type + Cross-section - row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                  {/* Select Type - compact */}
-                  <div className="min-w-0">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, verticalProfileType: 'T', verticalProfileSize: '' }))}
-                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                          formData.verticalProfileType === 'T' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg viewBox="0 0 60 80" className="w-10 h-12 mb-1">
-                            <rect x="10" y="0" width="40" height="8" fill={formData.verticalProfileType === 'T' ? '#374151' : '#9CA3AF'} />
-                            <rect x="24" y="8" width="12" height="72" fill={formData.verticalProfileType === 'T' ? '#374151' : '#9CA3AF'} />
-                          </svg>
-                          <span className={`text-xs font-medium ${formData.verticalProfileType === 'T' ? 'text-gray-900' : 'text-gray-600'}`}>T-Profile</span>
-                        </div>
-                      </div>
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, verticalProfileType: 'L', verticalProfileSize: '' }))}
-                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                          formData.verticalProfileType === 'L' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg viewBox="0 0 60 80" className="w-10 h-12 mb-1">
-                            <rect x="10" y="0" width="12" height="80" fill={formData.verticalProfileType === 'L' ? '#374151' : '#9CA3AF'} />
-                            <rect x="10" y="68" width="40" height="12" fill={formData.verticalProfileType === 'L' ? '#374151' : '#9CA3AF'} />
-                          </svg>
-                          <span className={`text-xs font-medium ${formData.verticalProfileType === 'L' ? 'text-gray-900' : 'text-gray-600'}`}>L-Profile</span>
-                        </div>
-                      </div>
-                    </div>
+                <div className="space-y-6">
+                {/* T-Profile */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg viewBox="0 0 60 80" className="w-8 h-10 flex-shrink-0">
+                      <rect x="10" y="0" width="40" height="8" fill="#374151" />
+                      <rect x="24" y="8" width="12" height="72" fill="#374151" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-900">T-Profile</span>
                   </div>
-                  {/* Cross-section Size */}
-                  {formData.verticalProfileType && (
-                    <div className="min-w-[12rem]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Size</label>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                        {verticalProfiles[formData.verticalProfileType].sizes.map((size) => (
+                        {verticalProfiles.T.sizes.map((size) => (
                           <label
                             key={size}
                             className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
-                              formData.verticalProfileSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                              formData.tProfileSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
                             }`}
                           >
-                            <input type="radio" name="verticalProfileSize" value={size} checked={formData.verticalProfileSize === size} onChange={handleInputChange} className="sr-only" />
+                            <input type="radio" name="tProfileSize" value={size} checked={formData.tProfileSize === size} onChange={handleInputChange} className="sr-only" />
                             <span>{size}</span>
                           </label>
                         ))}
                       </div>
                     </div>
-                  )}
-                </div>
-                
-                {/* Specify Length - row 2, below Select Type and Cross-section */}
-                <div>
-                  <div className="h-4" />
-                  <div className="grid grid-cols-3 gap-2">
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L1 (StoryHeight)</label>
-                      {renderInputWithUnit('verticalProfileLengthMax', 'mm')}
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L1</label>
+                      {renderInputWithUnit('tProfileLength1', 'mm')}
                     </div>
                     <div>
                       <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L2</label>
-                      {renderInputWithUnit('verticalProfileLength2', 'mm')}
+                      {renderInputWithUnit('tProfileLength2', 'mm')}
                     </div>
                     <div>
                       <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L3</label>
-                      {renderInputWithUnit('verticalProfileLength3', 'mm')}
+                      {renderInputWithUnit('tProfileLength3', 'mm')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* L-Profile */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg viewBox="0 0 60 80" className="w-8 h-10 flex-shrink-0">
+                      <rect x="10" y="0" width="12" height="80" fill="#374151" />
+                      <rect x="10" y="68" width="40" height="12" fill="#374151" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-900">L-Profile</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Size</label>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                        {verticalProfiles.L.sizes.map((size) => (
+                          <label
+                            key={size}
+                            className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
+                              formData.lProfileSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            <input type="radio" name="lProfileSize" value={size} checked={formData.lProfileSize === size} onChange={handleInputChange} className="sr-only" />
+                            <span>{size}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L1</label>
+                      {renderInputWithUnit('lProfileLength1', 'mm')}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L2</label>
+                      {renderInputWithUnit('lProfileLength2', 'mm')}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">L3</label>
+                      {renderInputWithUnit('lProfileLength3', 'mm')}
                     </div>
                   </div>
                 </div>
