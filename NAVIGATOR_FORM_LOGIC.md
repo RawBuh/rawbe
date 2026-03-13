@@ -46,7 +46,8 @@
   | Terracotta | QV7 (автоматично) | по panel orientation |
   | Aluminum | QV9 (автоматично) | всички варианти (QV9.3, QV9.5) |
   | Glass | Q-CLOUD (автоматично) | няма варианти |
-  | Ceramic, Fiber cement, Fiber concrete, HPL, ACM 4 mm, Stone | QV1, QV2, QV6 (филтрирани опции) | |
+  | Ceramic, Fiber cement, Fiber concrete, HPL, Stone | QV1, QV2, QV6 (филтрирани опции) | |
+  | ACM 4 mm | QV1, QV2 (само тези системи) | |
 - **Действие**: При фиксиран mapping – автоматично задава `qvSystem`, изчиства `qvVariant`. При филтрирани опции – изчиства избора ако текущият не е в allowed списъка.
 - **Your Configuration**: Обновява списъка с QV Systems и избрания system в модула.
 

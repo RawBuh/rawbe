@@ -147,7 +147,7 @@ const Draft = () => {
     'Fiber cement': ['QV1', 'QV2', 'QV6'],
     'Fiber concrete': ['QV1', 'QV2', 'QV6'],
     'HPL': ['QV1', 'QV2', 'QV6'],
-    'ACM 4 mm': ['QV1', 'QV2', 'QV6'],
+    'ACM 4 mm': ['QV1', 'QV2'],
     'Stone': ['QV1', 'QV2', 'QV6']
   };
 
