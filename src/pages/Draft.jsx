@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, MessageSquare, X, Eye } from 'lucide-react';
+import { Upload, MessageSquare, X, Eye, Info } from 'lucide-react';
 
 const Draft = () => {
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
@@ -95,8 +95,8 @@ const Draft = () => {
     'AGROB BUCHTAL KeraTwin K20',
     'Terracotta',
     'Ceramic',
-    'Metal panels',
-    'Extruded metal panels',
+    'Aluminum',
+    'Glass',
     'Fiber cement',
     'Fiber concrete',
     'HPL',
@@ -141,10 +141,14 @@ const Draft = () => {
   const claddingToQvSystems = {
     'AGROB BUCHTAL KeraTwin K20': ['QV3'],
     'Terracotta': ['QV7'],
-    'Metal panels': ['QV9'],
-    'Extruded metal panels': ['QV9'],
-    'Ceramic': ['QV1', 'QV2', 'QV6', 'Q-CLOUD'],
-    'HPL': ['QV1', 'QV2', 'QV6', 'Q-CLOUD']
+    'Aluminum': ['QV9'],
+    'Glass': ['Q-CLOUD'],
+    'Ceramic': ['QV1', 'QV2', 'QV6'],
+    'Fiber cement': ['QV1', 'QV2', 'QV6'],
+    'Fiber concrete': ['QV1', 'QV2', 'QV6'],
+    'HPL': ['QV1', 'QV2', 'QV6'],
+    'ACM 4 mm': ['QV1', 'QV2', 'QV6'],
+    'Stone': ['QV1', 'QV2', 'QV6']
   };
 
   const availableQvSystems = (() => {
@@ -154,7 +158,24 @@ const Draft = () => {
   })();
 
   const selectedSystemData = qvSystemsWithVariants.find(s => s.id === formData.qvSystem);
-  const currentVariants = selectedSystemData?.variants || [];
+  // Една логика за всички системи: под системата се листват варианти. QV3 и QV7 – филтриране по panel orientation
+  const currentVariants = (() => {
+    const variants = selectedSystemData?.variants || [];
+    const isKeraTwin = formData.qvSystem === 'QV3' && formData.claddingType === 'AGROB BUCHTAL KeraTwin K20';
+    const isTerracotta = formData.qvSystem === 'QV7' && formData.claddingType === 'Terracotta';
+    if (isKeraTwin) {
+      if (formData.panelOrientation === 'vertical') return variants.filter(v => ['QV3.3', 'QV3.4'].includes(v.id));
+      if (formData.panelOrientation === 'horizontal') return variants.filter(v => ['QV3.1', 'QV3.2'].includes(v.id));
+      return variants;
+    }
+    if (isTerracotta) {
+      const d = (v) => (v.description || '').toLowerCase();
+      if (formData.panelOrientation === 'vertical') return variants.filter(v => d(v).startsWith('vertical'));
+      if (formData.panelOrientation === 'horizontal') return variants.filter(v => d(v).startsWith('horizontal'));
+      return variants;
+    }
+    return variants;
+  })();
 
   const verticalProfiles = {
     T: {
@@ -167,7 +188,9 @@ const Draft = () => {
     }
   };
 
-  const wallBracketSizes = ['L-50', 'L-75', 'L-100', 'L-125', 'L-150', 'L-180', 'L-210', 'L-240'];
+  const qvbBracketSizes = [50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300]; // числа за изчисления, показват се като L-XX
+  const qtbBracketSizes = [85, 100, 125, 150, 175, 200, 225, 250, 275, 300]; // числа за изчисления, показват се като L-XX
+  const wallBracketSizes = formData.wallBracket === 'QTB' ? qtbBracketSizes : qvbBracketSizes;
 
   const substrateTypes = [
     'Stud',
@@ -206,8 +229,11 @@ const Draft = () => {
         } else if (value === 'Terracotta') {
           next.qvSystem = 'QV7';
           next.qvVariant = '';
-        } else if (value === 'Metal panels' || value === 'Extruded metal panels') {
+        } else if (value === 'Aluminum') {
           next.qvSystem = 'QV9';
+          next.qvVariant = '';
+        } else if (value === 'Glass') {
+          next.qvSystem = 'Q-CLOUD';
           next.qvVariant = '';
         } else if (allowed && !allowed.includes(next.qvSystem)) {
           // Mapped cladding (e.g. Ceramic, HPL) – clear if current selection not in allowed list
@@ -224,9 +250,31 @@ const Draft = () => {
         next.qvVariant = '';
       }
 
-      // Sync cavityOrInsulation when insulationThicknessMode changes (for Building section)
+      // When panel orientation changes for QV3/QV7, clear qvVariant if no longer valid
+      if (name === 'panelOrientation') {
+        const variants = qvSystemsWithVariants.find(s => s.id === next.qvSystem)?.variants || [];
+        let allowedIds = [];
+        if (next.qvSystem === 'QV3' && next.claddingType === 'AGROB BUCHTAL KeraTwin K20') {
+          allowedIds = value === 'vertical' ? ['QV3.3', 'QV3.4'] : value === 'horizontal' ? ['QV3.1', 'QV3.2'] : ['QV3.1', 'QV3.2', 'QV3.3', 'QV3.4'];
+        } else if (next.qvSystem === 'QV7' && next.claddingType === 'Terracotta') {
+          const d = (v) => (v.description || '').toLowerCase();
+          allowedIds = value === 'vertical'
+            ? variants.filter(v => d(v).startsWith('vertical')).map(v => v.id)
+            : value === 'horizontal'
+              ? variants.filter(v => d(v).startsWith('horizontal')).map(v => v.id)
+              : variants.map(v => v.id);
+        }
+        if (allowedIds.length > 0 && next.qvVariant && !allowedIds.includes(next.qvVariant)) {
+          next.qvVariant = '';
+        }
+      }
+
+      // Sync cavityOrInsulation and insulationThicknessMode (for Building section)
       if (name === 'insulationThicknessMode') {
         next.cavityOrInsulation = checked ? 'insulation' : 'cavity';
+      }
+      if (name === 'cavityOrInsulation') {
+        next.insulationThicknessMode = value === 'insulation';
       }
 
       return next;
@@ -242,7 +290,7 @@ const Draft = () => {
       <input
         type="text"
         name={name}
-        value={formData[name]}
+        value={formData[name] ?? ''}
         onChange={handleInputChange}
         required={required}
         className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
@@ -253,6 +301,14 @@ const Draft = () => {
       </span>
     </div>
   );
+
+  const PROFILE_LENGTH_MIN = 500;
+  const PROFILE_LENGTH_MAX = 6000;
+  const isProfileLengthInvalid = (val) => val !== '' && (isNaN(parseFloat(val)) || parseFloat(val) < PROFILE_LENGTH_MIN || parseFloat(val) > PROFILE_LENGTH_MAX);
+
+  const INSULATION_THICKNESS_MIN = 0;
+  const INSULATION_THICKNESS_MAX = 300;
+  const isInsulationThicknessInvalid = (val) => val !== '' && (isNaN(parseFloat(val)) || parseFloat(val) < INSULATION_THICKNESS_MIN || parseFloat(val) > INSULATION_THICKNESS_MAX);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -272,37 +328,39 @@ const Draft = () => {
                   Cladding
                 </h3>
                 <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Type <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="claddingType"
-                      value={formData.claddingType}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                    >
-                      <option value="">Select cladding type</option>
-                      {claddingTypes.map((type, index) => (
-                        <option key={index} value={type}>{type}</option>
-                      ))}
-                    </select>
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                    Type <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-4">
+                    {claddingTypes.map((type, index) => (
+                      <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="claddingType"
+                          value={type}
+                          checked={formData.claddingType === type}
+                          onChange={handleInputChange}
+                          required={index === 0}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>{type}</span>
+                      </label>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
-                      Brand
-                    </label>
-                    <input
-                      type="text"
-                      name="claddingBrand"
-                      value={formData.claddingBrand}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                      placeholder="Enter brand name"
-                    />
-                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
+                    Brand
+                  </label>
+                  <input
+                    type="text"
+                    name="claddingBrand"
+                    value={formData.claddingBrand}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
+                    placeholder="Enter brand name"
+                  />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,40 +378,6 @@ const Draft = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex flex-col md:flex-row md:items-end gap-4">
-                    <div className="flex-1 min-w-0">
-                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Weight</label>
-                      {renderInputWithUnit('claddingWeight', 'kg/sq.m')}
-                    </div>
-                    <span className="text-sm text-gray-500 font-medium shrink-0 self-center md:pb-3">or</span>
-                    <div className="flex-1 min-w-0 flex flex-col gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="checkbox"
-                          name="materialDensity"
-                          checked={formData.materialDensity}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
-                        />
-                        <span>Material Density</span>
-                      </label>
-                      {formData.materialDensity && (
-                        <div className="grid grid-cols-2 gap-4 mt-2">
-                          <div>
-                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
-                            {renderInputWithUnit('claddingThickness', 'mm')}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Density</label>
-                            {renderInputWithUnit('claddingDensity', 'kg/m³')}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 {(formData.claddingType === 'AGROB BUCHTAL KeraTwin K20' || formData.claddingType === 'Terracotta') && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -365,17 +389,6 @@ const Draft = () => {
                           <input
                             type="radio"
                             name="panelOrientation"
-                            value="vertical"
-                            checked={formData.panelOrientation === 'vertical'}
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
-                          />
-                          <span className="text-sm text-gray-700">Vertical</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="panelOrientation"
                             value="horizontal"
                             checked={formData.panelOrientation === 'horizontal'}
                             onChange={handleInputChange}
@@ -383,9 +396,54 @@ const Draft = () => {
                           />
                           <span className="text-sm text-gray-700">Horizontal</span>
                         </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="panelOrientation"
+                            value="vertical"
+                            checked={formData.panelOrientation === 'vertical'}
+                            onChange={handleInputChange}
+                            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                          />
+                          <span className="text-sm text-gray-700">Vertical</span>
+                        </label>
                       </div>
                     </div>
                   </div>
+                )}
+
+                {formData.claddingType !== 'AGROB BUCHTAL KeraTwin K20' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Weight</label>
+                    {renderInputWithUnit('claddingWeight', 'kg/sq.m')}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-gray-500 font-medium">or</span>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                      <input
+                        type="checkbox"
+                        name="materialDensity"
+                        checked={formData.materialDensity}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                      />
+                      <span>Material Density</span>
+                    </label>
+                  </div>
+                  {formData.materialDensity && (
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness</label>
+                        {renderInputWithUnit('claddingThickness', 'mm')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Density</label>
+                        {renderInputWithUnit('claddingDensity', 'kg/m³')}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 )}
                 </div>
               </div>
@@ -522,71 +580,75 @@ const Draft = () => {
                   </div>
                 </div>
 
-                {/* Cavity Depth OR Insulation Thickness – same pattern as Cladding Weight/Material Density */}
-                <div className="space-y-3">
-                  <div className="flex flex-col md:flex-row md:items-end gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 1</label>
-                          {renderInputWithUnit('cavityDepthMin', 'mm')}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Cavity Depth 2</label>
-                          {renderInputWithUnit('cavityDepthMax', 'mm')}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-sm text-gray-500 font-medium shrink-0 self-center md:pb-3">or</span>
-                    <div className="flex-1 min-w-0 flex flex-col gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
-                        <input
-                          type="checkbox"
-                          name="insulationThicknessMode"
-                          checked={formData.insulationThicknessMode}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
-                        />
-                        <span>Insulation Thickness</span>
-                      </label>
-                      {formData.insulationThicknessMode && (
-                        <div className="grid grid-cols-2 gap-4 mt-2">
-                          <div>
-                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness 1</label>
-                            {renderInputWithUnit('insulationThickness', 'mm')}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Insulation Thickness 2</label>
-                            {renderInputWithUnit('insulationThickness2', 'mm')}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Substrate Type */}
                 <div>
                   <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">
                     Substrate Type <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    name="substrateType"
-                    value={formData.substrateType}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200"
-                  >
-                    <option value="">Select substrate type</option>
+                  <div className="flex flex-wrap gap-4">
                     {substrateTypes.map((type, index) => (
-                      <option key={index} value={type}>
-                        {type}
-                      </option>
+                      <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                        <input
+                          type="radio"
+                          name="substrateType"
+                          value={type}
+                          checked={formData.substrateType === type}
+                          onChange={handleInputChange}
+                          required={index === 0}
+                          className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-400"
+                        />
+                        <span>{type}</span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
-                {/* Top Hat / C-Channel – below Substrate Type */}
+                {/* Substrate-specific fields – веднага под Substrate Type */}
+                {(formData.substrateType === 'Stud' || formData.substrateType === 'Steel work' || formData.substrateType === 'Concrete') && (
+                <div className="mt-4">
+                  {formData.substrateType === 'Stud' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
+                          <select name="studThickness" value={formData.studThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                            <option value="">Select thickness</option>
+                            {studThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
+                          <select name="studMaterial" value={formData.studMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                            <option value="">Select material</option>
+                            {studMaterialOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                  )}
+                  {formData.substrateType === 'Steel work' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
+                          <input type="text" name="steelWorkThickness" value={formData.steelWorkThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="3 mm" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
+                          <select name="steelWorkMaterial" value={formData.steelWorkMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
+                            <option value="">Select material</option>
+                            {steelWorkMaterialOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                  )}
+                  {formData.substrateType === 'Concrete' && (
+                    <div>
+                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Concrete Grade <span className="text-red-500">*</span></label>
+                        <input type="text" name="concreteGrade" value={formData.concreteGrade} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="C20/25 (default)" />
+                    </div>
+                  )}
+                </div>
+                )}
+
+                {/* Top Hat / C-Channel */}
                 <div>
                   <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Top Hat / C-Channel <span className="text-red-500">*</span></label>
                   <div className="flex gap-4">
@@ -633,49 +695,63 @@ const Draft = () => {
                     </div>
                   </div>
                 )}
-                {(formData.substrateType === 'Stud' || formData.substrateType === 'Steel work' || formData.substrateType === 'Concrete') && (
-                <div className="mt-4">
-                  {formData.substrateType === 'Stud' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
-                          <select name="studThickness" value={formData.studThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
-                            <option value="">Select thickness</option>
-                            {studThicknessOptions.map((opt) => <option key={opt} value={opt}>{opt} mm</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
-                          <select name="studMaterial" value={formData.studMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
-                            <option value="">Select material</option>
-                            {studMaterialOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                  )}
-                  {formData.substrateType === 'Steel work' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness <span className="text-red-500">*</span></label>
-                          <input type="text" name="steelWorkThickness" value={formData.steelWorkThickness} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="3 mm" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Material <span className="text-red-500">*</span></label>
-                          <select name="steelWorkMaterial" value={formData.steelWorkMaterial} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200">
-                            <option value="">Select material</option>
-                            {steelWorkMaterialOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                  )}
-                  {formData.substrateType === 'Concrete' && (
+              </div>
+            </div>
+
+            {/* Cavity Depth – под блока Building */}
+            <div className="mt-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans flex items-center gap-2">
+                  Cavity Depth
+                  <span className="group relative inline-flex" title="Total depth measured from the substrate/ building wall to the back of the cladding.">
+                    <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" aria-label="Cavity Depth definition" />
+                    <span className="absolute left-0 bottom-full mb-1 px-2 py-1.5 text-xs text-gray-700 bg-gray-100 border border-gray-200 rounded-lg shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity w-64 z-10 font-sans">
+                      Total depth measured from the substrate/ building wall to the back of the cladding.
+                    </span>
+                  </span>
+                </h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Concrete Grade <span className="text-red-500">*</span></label>
-                        <input type="text" name="concreteGrade" value={formData.concreteGrade} onChange={handleInputChange} required className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-base font-sans transition-all duration-200" placeholder="C20/25 (default)" />
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth 1</label>
+                      {renderInputWithUnit('cavityDepthMin', 'mm')}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Depth 2</label>
+                      {renderInputWithUnit('cavityDepthMax', 'mm')}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-gray-500 font-medium">or</span>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 font-sans">
+                      <input
+                        type="checkbox"
+                        name="insulationThicknessMode"
+                        checked={formData.insulationThicknessMode}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-400"
+                      />
+                      <span>Provide Insulation Thickness</span>
+                    </label>
+                  </div>
+                  {formData.insulationThicknessMode && (
+                    <div className="pt-2 border-t border-gray-100 space-y-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness 1</label>
+                          {renderInputWithUnit('insulationThickness', 'mm')}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-normal text-gray-700 mb-2 font-sans">Thickness 2</label>
+                          {renderInputWithUnit('insulationThickness2', 'mm')}
+                        </div>
+                      </div>
+                      {(isInsulationThicknessInvalid(formData.insulationThickness) || isInsulationThicknessInvalid(formData.insulationThickness2)) && (
+                        <p className="text-sm text-red-600 font-sans">Insulation thickness should be between 0 and 300 mm</p>
+                      )}
                     </div>
                   )}
                 </div>
-                )}
               </div>
             </div>
 
@@ -744,6 +820,8 @@ const Draft = () => {
               </div>
             </div>
 
+            {formData.claddingType !== 'AGROB BUCHTAL KeraTwin K20' && (
+            <>
             {/* Vertical profiles */}
             <div className="mt-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
@@ -789,6 +867,9 @@ const Draft = () => {
                         {renderInputWithUnit('tProfileLength3', 'mm')}
                       </div>
                     </div>
+                    {(isProfileLengthInvalid(formData.tProfileLength1) || isProfileLengthInvalid(formData.tProfileLength2) || isProfileLengthInvalid(formData.tProfileLength3)) && (
+                      <p className="text-sm text-red-600 font-sans">Profile length should be between 500 and 6000 mm</p>
+                    )}
                   </div>
                 </div>
 
@@ -830,6 +911,9 @@ const Draft = () => {
                         {renderInputWithUnit('lProfileLength3', 'mm')}
                       </div>
                     </div>
+                    {(isProfileLengthInvalid(formData.lProfileLength1) || isProfileLengthInvalid(formData.lProfileLength2) || isProfileLengthInvalid(formData.lProfileLength3)) && (
+                      <p className="text-sm text-red-600 font-sans">Profile length should be between 500 and 6000 mm</p>
+                    )}
                   </div>
                 </div>
                 
@@ -873,6 +957,8 @@ const Draft = () => {
               </div>
             </div>
             </div>
+            </>
+            )}
 
             {/* Wall brackets */}
             <div className="mt-4">
@@ -880,56 +966,68 @@ const Draft = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-5 pb-2 border-b border-gray-100 font-sans">
                   Wall brackets
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                  <div className="min-w-0">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QVB', wallBracketSize: '' }))}
-                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                          formData.wallBracket === 'QVB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
-                            <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
-                            <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
-                            <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QVB' ? '#6B7280' : '#D1D5DB'} />
-                          </svg>
-                          <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QVB' ? 'text-gray-900' : 'text-gray-600'}`}>QVB aluminum</span>
-                        </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2 max-w-xs">
+                    <div
+                      onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QVB', wallBracketSize: '' }))}
+                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all duration-200 ${
+                        formData.wallBracket === 'QVB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <svg viewBox="0 0 64 56" className="w-10 h-12 mb-2">
+                          <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                          <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QVB' ? '#374151' : '#9CA3AF'} />
+                          <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QVB' ? '#6B7280' : '#D1D5DB'} />
+                        </svg>
+                        <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QVB' ? 'text-gray-900' : 'text-gray-600'}`}>QVB aluminum</span>
                       </div>
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QTB', wallBracketSize: '' }))}
-                        className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
-                          formData.wallBracket === 'QTB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg viewBox="0 0 64 56" className="w-10 h-12 mb-1">
-                            <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
-                            <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
-                            <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QTB' ? '#6B7280' : '#D1D5DB'} />
-                            <circle cx="48" cy="41" r="3" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
-                          </svg>
-                          <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QTB' ? 'text-gray-900' : 'text-gray-600'}`}>QTB stainless steel</span>
-                        </div>
+                    </div>
+                    <div
+                      onClick={() => setFormData(prev => ({ ...prev, wallBracket: 'QTB', wallBracketSize: '' }))}
+                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all duration-200 ${
+                        formData.wallBracket === 'QTB' ? 'border-gray-600 bg-gray-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <svg viewBox="0 0 64 56" className="w-10 h-12 mb-2">
+                          <rect x="4" y="8" width="8" height="40" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                          <rect x="12" y="36" width="44" height="10" rx="1" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                          <rect x="12" y="10" width="8" height="8" rx="1" fill={formData.wallBracket === 'QTB' ? '#6B7280' : '#D1D5DB'} />
+                          <circle cx="48" cy="41" r="3" fill={formData.wallBracket === 'QTB' ? '#374151' : '#9CA3AF'} />
+                        </svg>
+                        <span className={`text-xs font-medium text-center ${formData.wallBracket === 'QTB' ? 'text-gray-900' : 'text-gray-600'}`}>QTB stainless steel</span>
                       </div>
                     </div>
                   </div>
                   {formData.wallBracket && (
-                    <div className="min-w-[12rem]">
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                        {wallBracketSizes.map((size) => (
-                          <label
-                            key={size}
-                            className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
-                              formData.wallBracketSize === size ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
-                            }`}
-                          >
-                            <input type="radio" name="wallBracketSize" value={size} checked={formData.wallBracketSize === size} onChange={handleInputChange} className="sr-only" />
-                            <span>{size}</span>
-                          </label>
-                        ))}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="text-sm font-normal text-gray-600 font-sans">Depth (length)</span>
+                        <span className="group relative inline-flex" title="Wall Bracket Stand-off Distance">
+                          <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" aria-label="Definition" />
+                          <span className="absolute left-0 bottom-full mb-1 px-2 py-1.5 text-xs text-gray-700 bg-gray-100 border border-gray-200 rounded-lg shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity w-56 z-10 font-sans">
+                            Wall Bracket Stand-off Distance
+                          </span>
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                        {wallBracketSizes.map((size) => {
+                          const value = String(size);
+                          const display = `L-${size}`;
+                          const isChecked = formData.wallBracketSize === value;
+                          return (
+                            <label
+                              key={value}
+                              className={`flex items-center justify-center p-2 rounded border cursor-pointer transition-all text-xs ${
+                                isChecked ? 'border-gray-600 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                              }`}
+                            >
+                              <input type="radio" name="wallBracketSize" value={value} checked={isChecked} onChange={handleInputChange} className="sr-only" />
+                              <span>{display}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1090,9 +1188,9 @@ const Draft = () => {
         </div>
         </div>
 
-        {/* Right: Your Configuration – sidebar parallel to form */}
-        <div className="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:flex-col lg:self-start">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5 sticky top-8 flex flex-col">
+        {/* Right: Your Configuration – sticky кошница, винаги видима при скрол */}
+        <div className="hidden lg:block lg:w-80 lg:flex-shrink-0 lg:self-start sticky top-8">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5 flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto">
             <h3 className="text-lg font-medium text-gray-900 font-sans mb-4">Your Configuration</h3>
             {/* Systems (top) */}
             <div className="grid grid-cols-2 gap-2">
